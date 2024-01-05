@@ -6,13 +6,69 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+    <ImageView
+        android:id="@+id/car1"
+        android:layout_width="124dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.04"
+        app:srcCompat="@drawable/img" />
 
+    <ImageView
+        android:id="@+id/car11"
+        android:layout_width="124dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="304dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.953"
+        app:srcCompat="@drawable/img" />
+
+    <ImageView
+        android:id="@+id/car2"
+        android:layout_width="124dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.953"
+        app:srcCompat="@drawable/img_1" />
+
+    <ImageView
+        android:id="@+id/car22"
+        android:layout_width="124dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="296dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.04"
+        app:srcCompat="@drawable/img_1" />
+
+    <ImageView
+        android:id="@+id/car3"
+        android:layout_width="124dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="156dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.953"
+        app:srcCompat="@drawable/img_2" />
+
+    <ImageView
+        android:id="@+id/car33"
+        android:layout_width="124dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="156dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.04"
+        app:srcCompat="@drawable/img_2" />
 </androidx.constraintlayout.widget.ConstraintLayout>
