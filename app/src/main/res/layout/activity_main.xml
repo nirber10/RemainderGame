@@ -8,67 +8,180 @@
 
     <ImageView
         android:id="@+id/car1"
-        android:layout_width="124dp"
+        android:layout_width="80dp"
         android:layout_height="111dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.04"
+        app:layout_constraintVertical_bias="0.13"
         app:srcCompat="@drawable/img" />
 
     <ImageView
         android:id="@+id/car11"
-        android:layout_width="124dp"
+        android:layout_width="80dp"
         android:layout_height="111dp"
-        android:layout_marginStart="304dp"
+        android:layout_marginStart="120dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.953"
+        app:layout_constraintVertical_bias="0.78"
         app:srcCompat="@drawable/img" />
 
     <ImageView
         android:id="@+id/car2"
-        android:layout_width="124dp"
+        android:layout_width="80dp"
         android:layout_height="111dp"
         android:layout_marginStart="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.953"
+        app:layout_constraintVertical_bias="0.566"
         app:srcCompat="@drawable/img_1" />
 
     <ImageView
         android:id="@+id/car22"
-        android:layout_width="124dp"
+        android:layout_width="80dp"
         android:layout_height="111dp"
-        android:layout_marginStart="296dp"
+        android:layout_marginStart="120dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.04"
+        app:layout_constraintVertical_bias="0.13"
         app:srcCompat="@drawable/img_1" />
 
     <ImageView
         android:id="@+id/car3"
-        android:layout_width="124dp"
+        android:layout_width="80dp"
         android:layout_height="111dp"
-        android:layout_marginStart="156dp"
+        android:layout_marginStart="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.953"
+        app:layout_constraintVertical_bias="0.78"
         app:srcCompat="@drawable/img_2" />
 
     <ImageView
         android:id="@+id/car33"
-        android:layout_width="124dp"
-        android:layout_height="111dp"
-        android:layout_marginStart="156dp"
+        android:layout_width="80dp"
+        android:layout_height="112dp"
+        android:layout_marginStart="212dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.04"
+        app:layout_constraintVertical_bias="0.351"
         app:srcCompat="@drawable/img_2" />
+
+    <ImageView
+        android:id="@+id/car44"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.837"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.566"
+        app:srcCompat="@drawable/img_3" />
+
+    <ImageView
+        android:id="@+id/car4"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.35"
+        app:srcCompat="@drawable/img_3" />
+
+    <ImageView
+        android:id="@+id/car5"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.837"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.13"
+        app:srcCompat="@drawable/img_4" />
+
+    <ImageView
+        android:id="@+id/car55"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="212dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.566"
+        app:srcCompat="@drawable/img_4" />
+
+    <ImageView
+        android:id="@+id/car6"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.837"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.352"
+        app:srcCompat="@drawable/img_5" />
+
+    <ImageView
+        android:id="@+id/car66"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="120dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.35"
+        app:srcCompat="@drawable/img_5" />
+
+    <ImageView
+        android:id="@+id/car7"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="212dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.13"
+        app:srcCompat="@drawable/img_6" />
+
+    <ImageView
+        android:id="@+id/car77"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="116dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.566"
+        app:srcCompat="@drawable/img_6" />
+
+    <ImageView
+        android:id="@+id/car88"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="300dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.78"
+        app:srcCompat="@drawable/img_7" />
+
+    <ImageView
+        android:id="@+id/car8"
+        android:layout_width="80dp"
+        android:layout_height="111dp"
+        android:layout_marginStart="212dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.78"
+        app:srcCompat="@drawable/img_7" />
 </androidx.constraintlayout.widget.ConstraintLayout>
