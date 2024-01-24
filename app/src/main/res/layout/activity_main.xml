@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <<ImageView
+    <ImageView
         android:id="@+id/car1"
         android:layout_width="80dp"
         android:layout_height="111dp"
