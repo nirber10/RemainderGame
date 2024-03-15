@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "850436752733",
+    "project_id": "remaindergame",
+    "storage_bucket": "remaindergame.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:850436752733:android:323a3dc2c069bde48894b4",
+        "android_client_info": {
+          "package_name": "com.example.remaindergame"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJsu2SAJceO9h2t7mXPHRF36_3rxS3Gvk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
