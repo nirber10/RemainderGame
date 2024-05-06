@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,91 +32,68 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+{
+    int count = 0;
+    int card1;
+    int counterPlayer1 = 0;
+    int counterPlayer2 = 0;
+    String turn = "counterPlayer1";
+    ImageView[] imageViewsArray = new ImageView[16];
+    Integer[] drawablesArray = new Integer[16];
 
-    FirebaseAuth auth;
-    GoogleSignInClient googleSignInClient;
-    ShapeableImageView imageView;
-    TextView name, mail;
-    private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-            if (result.getResultCode() == RESULT_OK) {
-                Task<GoogleSignInAccount> accountTask = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                try {
-                    GoogleSignInAccount signInAccount = accountTask.getResult(ApiException.class);
-                    AuthCredential authCredential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
-                    auth.signInWithCredential(authCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                auth = FirebaseAuth.getInstance();
-                                Glide.with(MainActivity.this).load(Objects.requireNonNull(auth.getCurrentUser()).getPhotoUrl()).into(imageView);
-                                name.setText(auth.getCurrentUser().getDisplayName());
-                                mail.setText(auth.getCurrentUser().getEmail());
-                                Toast.makeText(MainActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(MainActivity.this, "Failed to sign in: " + task.getException(), Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
-                } catch (ApiException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    });
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        FirebaseApp.initializeApp(this);
-        imageView = findViewById(R.id.profileImage);
-        name = findViewById(R.id.nameTV);
-        mail = findViewById(R.id.mailTV);
-        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.client_id))
-                .requestEmail()
-                .build();
-        googleSignInClient = GoogleSignIn.getClient(MainActivity.this, options);
-        auth = FirebaseAuth.getInstance();
-        SignInButton signInButton = findViewById(R.id.signIn);
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = googleSignInClient.getSignInIntent();
-                activityResultLauncher.launch(intent);
-            }
-        });
 
-        MaterialButton signOut = findViewById(R.id.signout);
-        signOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
-                    @Override
-                    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                        if (firebaseAuth.getCurrentUser() == null) {
-                            googleSignInClient.signOut().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Toast.makeText(MainActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(MainActivity.this, MainActivity.class));
-                                }
-                            });
-                        }
-                    }
-                });
-                FirebaseAuth.getInstance().signOut();
-            }
-        });
+        fillImageViewsArray();
+        fillDrawablesArray();
+        shuffleDrawablesArray();
+    }
 
-        if (auth.getCurrentUser() != null) {
-            Glide.with(MainActivity.this).load(Objects.requireNonNull(auth.getCurrentUser()).getPhotoUrl()).into(imageView);
-            name.setText(auth.getCurrentUser().getDisplayName());
-            mail.setText(auth.getCurrentUser().getEmail());
+    // First array - Image views
+    private void fillImageViewsArray() {
+        for (int i = 0; i < imageViewsArray.length; i++) {
+            int imageViewId = getResources().getIdentifier("car" + (i + 1), "id", getPackageName());
+            imageViewsArray[i] = findViewById(imageViewId);
         }
     }
+
+    // Second array - Drawables (Images) identifiers
+    private void fillDrawablesArray() {
+        for (int i = 0; i < drawablesArray.length; i++) {
+            // Fill in the drawable's identifier
+            int drawableId = getResources().getIdentifier("img_" + ((i % 8) + 1), "drawable", getPackageName());
+            drawablesArray[i] = drawableId;
+        }
+    }
+
+    // Second array - Shuffle the array
+    private void shuffleDrawablesArray() {
+        List<Integer> drawablesList = Arrays.asList(drawablesArray); // Convert array to list
+        Collections.shuffle(drawablesList); // Shuffle list
+        drawablesList.toArray(drawablesArray);
+
 }
+
+    public void openCard(View view) throws InterruptedException {
+        ImageView imageView = (ImageView) view;
+        int id_of_imageview_in_array = 0;
+        for (int i = 0; i < imageViewsArray.length; i++) {
+            if (imageViewsArray[i] == imageView) {
+                id_of_imageview_in_array = i;
+                break;
+            }
+        }
+        imageView.setImageResource(drawablesArray[id_of_imageview_in_array]);
+        count++;
+        turnEnd1(imageView);
+    }
+}
+
