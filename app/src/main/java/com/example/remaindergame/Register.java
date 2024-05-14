@@ -1,6 +1,6 @@
 package com.example.remaindergame;
 
-public class MainActivity1
+public class Register
 {
 
 }

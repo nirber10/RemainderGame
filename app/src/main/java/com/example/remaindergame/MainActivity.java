@@ -37,13 +37,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity
-{
+public class MainActivity extends AppCompatActivity {
     int count = 0;
-    int card1;
+    int card1 = -1; // Initialize to -1 to indicate no card selected
+    int card2 = -1;
     int counterPlayer1 = 0;
     int counterPlayer2 = 0;
-    String turn = "counterPlayer1";
+    boolean player1Turn = true; // Player 1 starts the game
     ImageView[] imageViewsArray = new ImageView[16];
     Integer[] drawablesArray = new Integer[16];
 
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity
         shuffleDrawablesArray();
     }
 
-    // First array - Image views
+    // Fill imageViewsArray with ImageViews
     private void fillImageViewsArray() {
         for (int i = 0; i < imageViewsArray.length; i++) {
             int imageViewId = getResources().getIdentifier("car" + (i + 1), "id", getPackageName());
@@ -65,24 +65,22 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    // Second array - Drawables (Images) identifiers
+    // Fill drawablesArray with drawables identifiers
     private void fillDrawablesArray() {
         for (int i = 0; i < drawablesArray.length; i++) {
-            // Fill in the drawable's identifier
             int drawableId = getResources().getIdentifier("img_" + ((i % 8) + 1), "drawable", getPackageName());
             drawablesArray[i] = drawableId;
         }
     }
 
-    // Second array - Shuffle the array
+    // Shuffle drawablesArray
     private void shuffleDrawablesArray() {
-        List<Integer> drawablesList = Arrays.asList(drawablesArray); // Convert array to list
-        Collections.shuffle(drawablesList); // Shuffle list
+        List<Integer> drawablesList = Arrays.asList(drawablesArray);
+        Collections.shuffle(drawablesList);
         drawablesList.toArray(drawablesArray);
+    }
 
-}
-
-    public void openCard(View view) throws InterruptedException {
+    public void openCard(View view) {
         ImageView imageView = (ImageView) view;
         int id_of_imageview_in_array = 0;
         for (int i = 0; i < imageViewsArray.length; i++) {
@@ -91,9 +89,56 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
         }
+
+        // If the card is already flipped, return
+        if (imageView.getDrawable() != null) {
+            return;
+        }
+
         imageView.setImageResource(drawablesArray[id_of_imageview_in_array]);
         count++;
-        turnEnd1(imageView);
+
+        // Store the position of the card clicked
+        if (count == 1) {
+            card1 = id_of_imageview_in_array;
+        } else if (count == 2) {
+            card2 = id_of_imageview_in_array;
+            turnEnd();
+        }
+    }
+
+    private void turnEnd() {
+        if (drawablesArray[card1].equals(drawablesArray[card2])) {
+            // Match found
+            if (player1Turn) {
+                counterPlayer1++;
+            } else {
+                counterPlayer2++;
+            }
+            if (counterPlayer1 + counterPlayer2 == 8) {
+                // Game Over, you can put your game over logic here
+                // For now, let's just display a toast
+                Toast.makeText(this, "Game Over!", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            // No match found
+            // Delay hiding cards for better user experience
+            imageViewsArray[card1].postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    imageViewsArray[card1].setImageResource(0); // Hide first card
+                    imageViewsArray[card2].setImageResource(0); // Hide second card
+                }
+            }, 1000);
+        }
+
+        // Reset count and prepare for the next turn
+        count = 0;
+        card1 = -1;
+        card2 = -1;
+
+        // Switch player turns
+        player1Turn = !player1Turn;
     }
 }
 
