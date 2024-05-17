@@ -24,6 +24,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car2"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -40,6 +41,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car3"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -56,6 +58,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car4"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -72,6 +75,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car5"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -88,6 +92,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car6"
         android:layout_width="80dp"
         android:layout_height="112dp"
@@ -104,6 +109,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car7"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -120,6 +126,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car8"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -136,6 +143,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car9"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -152,6 +160,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car10"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -168,6 +177,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car11"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -184,6 +194,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car12"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -200,6 +211,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car13"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -216,6 +228,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car14"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -232,6 +245,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car15"
         android:layout_width="80dp"
         android:layout_height="111dp"
@@ -248,6 +262,7 @@
         app:srcCompat="@drawable/back32" />
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car16"
         android:layout_width="80dp"
         android:layout_height="111dp"
