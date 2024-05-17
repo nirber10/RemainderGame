@@ -34,7 +34,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
-
+import com.example.remaindergame.R;
 import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity {
@@ -60,6 +60,7 @@ public class LoginActivity extends AppCompatActivity {
                                 name.setText(auth.getCurrentUser().getDisplayName());
                                 mail.setText(auth.getCurrentUser().getEmail());
                                 Toast.makeText(LoginActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
                             } else {
                                 Toast.makeText(LoginActivity.this, "Failed to sign in: " + task.getException(), Toast.LENGTH_SHORT).show();
                             }
@@ -75,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
         FirebaseApp.initializeApp(this);
         imageView = findViewById(R.id.profileImage);
         name = findViewById(R.id.nameTV);
