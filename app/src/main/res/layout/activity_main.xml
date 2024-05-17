@@ -7,13 +7,14 @@
     tools:context=".MainActivity">
 
     <ImageView
+        android:onClick="onBtnClicked"
         android:id="@+id/car1"
         android:layout_width="80dp"
         android:layout_height="111dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_marginEnd="313dp"
-        android:layout_marginBottom="586dp"
+        android:layout_marginBottom="594dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.078"
