@@ -14,14 +14,17 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this); // Enable edge-to-edge rendering
         setContentView(R.layout.activity_main2);
+
+        // Apply window insets for padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
-            Toast.makeText(this, "ברוך הבא להגדרות!", Toast.LENGTH_SHORT).show();
-
         });
+
+        // Show Toast message
+        Toast.makeText(this, "ברוך הבא להגדרות!", Toast.LENGTH_SHORT).show();
     }
 }

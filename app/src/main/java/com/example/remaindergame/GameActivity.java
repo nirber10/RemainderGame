@@ -14,17 +14,20 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this); // Enable edge-to-edge rendering
         setContentView(R.layout.activity_game);
+
+        // Apply window insets for edge-to-edge padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets; // Ensure lambda ends here
+        });
 
-
-            Toast.makeText(this, "ברוך הבא למסך המשחק!", Toast.LENGTH_SHORT).show();
-            return insets;
-
-    };
+        // Show Toast message
+        Toast.makeText(this, "ברוך הבא למסך המשחק!", Toast.LENGTH_SHORT).show();
+    }
+}
 
 
 
