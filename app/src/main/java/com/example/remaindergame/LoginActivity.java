@@ -60,7 +60,9 @@ public class LoginActivity extends AppCompatActivity {
                                 name.setText(auth.getCurrentUser().getDisplayName());
                                 mail.setText(auth.getCurrentUser().getEmail());
                                 Toast.makeText(LoginActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+
+                                startActivity(new Intent(LoginActivity.this, OpenActivity.class));
+
                             } else {
                                 Toast.makeText(LoginActivity.this, "Failed to sign in: " + task.getException(), Toast.LENGTH_SHORT).show();
                             }
@@ -119,9 +121,9 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         if (auth.getCurrentUser() != null) {
-            Glide.with(LoginActivity.this).load(Objects.requireNonNull(auth.getCurrentUser()).getPhotoUrl()).into(imageView);
-            name.setText(auth.getCurrentUser().getDisplayName());
-            mail.setText(auth.getCurrentUser().getEmail());
+
+            startActivity(new Intent(LoginActivity.this, OpenActivity.class));
+            finish();
         }
     }
 }

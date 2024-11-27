@@ -32,7 +32,7 @@ public class OpenActivity extends AppCompatActivity {
         startGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(OpenActivity.this, GameActivity.class);
+                Intent intent = new Intent(OpenActivity.this, MainActivity.class);
                 startActivity(intent);
             }
         });
