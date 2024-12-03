@@ -97,19 +97,28 @@ Log.e("xxxx" , "line 59");
                 counterPlayer2++;
             }
 
+
             if (counterPlayer1 + counterPlayer2 == 8) {
                 Toast.makeText(this, "Game Over! Player 1: " + counterPlayer1 + " - Player 2: " + counterPlayer2, Toast.LENGTH_LONG).show();
+            } else {
+
+                Toast.makeText(this, "נכון!", Toast.LENGTH_SHORT).show();
             }
         } else {
+
             imageViewsArray[card1].setImageResource(R.drawable.back32);
             imageViewsArray[card2].setImageResource(R.drawable.back32);
             imageViewsArray[card1].setTag(false);
             imageViewsArray[card2].setTag(false);
+            Toast.makeText(this, "נגמר התור", Toast.LENGTH_SHORT).show();
         }
 
         count = 0;
         card1 = -1;
         card2 = -1;
+
         player1Turn = !player1Turn;
     }
+
 }
+

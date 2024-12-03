@@ -10,15 +10,17 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
+        android:background="#FFEB3B"
         android:gravity="center"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:background="#FFEB3B">
+        tools:layout_editor_absoluteX="0dp"
+        tools:layout_editor_absoluteY="50dp">
 
         <TextView
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_marginBottom="32dp"
             android:text="משחק זיכרון"
             android:textColor="#000000"
@@ -29,18 +31,18 @@
             android:id="@+id/startGameButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="התחל משחק"
             android:layout_marginBottom="16dp"
             android:backgroundTint="#4CAF50"
-            android:textColor="#FFFFFF"/>
+            android:text="התחל משחק"
+            android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/settingsButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="הגדרות"
             android:backgroundTint="#2196F3"
-            android:textColor="#FFFFFF"/>
+            android:text="הגדרות"
+            android:textColor="#FFFFFF" />
 
     </LinearLayout>
 
