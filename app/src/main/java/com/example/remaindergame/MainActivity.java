@@ -1,6 +1,8 @@
 package com.example.remaindergame;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -56,13 +58,13 @@ public class MainActivity extends AppCompatActivity {
 
         clickedImageView.setImageResource(drawablesArray[clickedIndex]);
         clickedImageView.setTag(true);
-Log.e("xxxx" , "line 59");
+        Log.e("xxxx", "line 59");
         if (count == 0) {
-            Log.e("xxxx" , "line 61");
+            Log.e("xxxx", "line 61");
             card1 = clickedIndex;
             count++;
         } else if (count == 1) {
-            Log.e("xxxx" , "line 65");
+            Log.e("xxxx", "line 65");
             card2 = clickedIndex;
             count++;
             handler.postDelayed(this::turnEnd, 1000);
@@ -97,28 +99,32 @@ Log.e("xxxx" , "line 59");
                 counterPlayer2++;
             }
 
-
+            // Check if the game is over
             if (counterPlayer1 + counterPlayer2 == 8) {
+                // Display final scores in a Toast
                 Toast.makeText(this, "Game Over! Player 1: " + counterPlayer1 + " - Player 2: " + counterPlayer2, Toast.LENGTH_LONG).show();
-            } else {
 
-                Toast.makeText(this, "נכון!", Toast.LENGTH_SHORT).show();
+                // Navigate to EndScreen
+                Intent intent = new Intent(MainActivity.this, EndScreen.class);
+                startActivity(intent);
+
+                return; // Exit turnEnd method to prevent further logic
+            } else {
+                Toast.makeText(this, "Correct Match!", Toast.LENGTH_SHORT).show();
             }
         } else {
-
+            // Reset unmatched cards
             imageViewsArray[card1].setImageResource(R.drawable.back32);
             imageViewsArray[card2].setImageResource(R.drawable.back32);
             imageViewsArray[card1].setTag(false);
             imageViewsArray[card2].setTag(false);
-            Toast.makeText(this, "נגמר התור", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Turn Over", Toast.LENGTH_SHORT).show();
         }
 
+        // Reset for next turn
         count = 0;
         card1 = -1;
         card2 = -1;
-
         player1Turn = !player1Turn;
     }
-
 }
-
