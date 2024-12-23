@@ -1,6 +1,7 @@
 package com.example.remaindergame;
 
 // מחלקה ראשית של האפליקציה
+
 import androidx.appcompat.app.AppCompatActivity; // מחלקה לניהול פעילות (Activity)
 import android.content.Intent; // משמש לעבור בין מסכים
 import android.os.Bundle; // משמש להעברת נתונים בין פעילויות
@@ -10,6 +11,12 @@ import android.view.View; // מייצג רכיב תצוגה באפליקציה
 import android.widget.ImageView; // רכיב תצוגה להצגת תמונות
 import android.widget.TextView; // רכיב תצוגה להצגת טקסט
 import android.widget.Toast; // משמש להצגת הודעות קצרות על המסך
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Arrays; // מספק כלים לעבודה עם מערכים
 import java.util.Collections; // מספק כלים למיון וערבוב רשימות
@@ -28,10 +35,40 @@ public class MainActivity extends AppCompatActivity {
     private final Handler handler = new Handler(); // משמש לעיכוב
     private TextView scoreTextView; // רכיב להצגת תוצאות המשחק
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // קובע את הפריסה של המסך
+        // Initialize Firebase Database
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+
+// Create a User object
+        User user = new User("John", "john@example.com");
+
+// Write data
+        databaseReference.child("user1").setValue(user)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Firebase", "Data written successfully.");
+                    } else {
+                        Log.d("Firebase", "Failed to write data: " + task.getException());
+                    }
+                });
+        databaseReference.child("user1").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                Log.d("Firebase", "User Name: " + user.getName());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Log.w("Firebase", "Failed to read value.", error.toException());
+            }
+        });
+
 
         // אתחול תצוגת התוצאות
         scoreTextView = findViewById(R.id.scoreTextView);

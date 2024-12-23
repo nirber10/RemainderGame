@@ -60,8 +60,10 @@ public class LoginActivity extends AppCompatActivity {
                                 name.setText(auth.getCurrentUser().getDisplayName());
                                 mail.setText(auth.getCurrentUser().getEmail());
                                 Toast.makeText(LoginActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
-
-                                startActivity(new Intent(LoginActivity.this, OpenActivity.class));
+                                Intent intent = new Intent(LoginActivity.this, OpenActivity.class);
+                                intent.putExtra("USERNAME",auth.getCurrentUser().getDisplayName());
+                                startActivity(intent);
+                                ;
 
                             } else {
                                 Toast.makeText(LoginActivity.this, "Failed to sign in: " + task.getException(), Toast.LENGTH_SHORT).show();
