@@ -31,9 +31,9 @@ public class MainActivity extends AppCompatActivity {
     private int counterPlayer1 = 0; // נקודות של שחקן 1
     private int counterPlayer2 = 0; // נקודות של שחקן 2
     private boolean player1Turn = true; // מציין אם תורו של שחקן 1
-    private final ImageView[] imageViewsArray = new ImageView[16]; // מערך לאחסון תמונות הקלפים
-    private final Integer[] drawablesArray = new Integer[16]; // מערך לאחסון מזהי המשאבים (תמונות)
-    private final Handler handler = new Handler(); // משמש לעיכוב
+    private final ImageView[] imageViewsArray; // מערך לאחסון תמונות הקלפים
+    private final Integer[] drawablesArray; // מערך לאחסון מזהי המשאבים (תמונות)
+    private final Handler handler; // משמש לעיכוב
     private TextView scoreTextView; // רכיב להצגת תוצאות המשחק
 
 
@@ -41,6 +41,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // קובע את הפריסה של המסך
+
+        imageViewsArray = new ImageView[16]; // מערך לאחסון תמונות הקלפים
+        drawablesArray = new Integer[16]; // מערך לאחסון מזהי המשאבים (תמונות)
+        Handler handler = new Handler(); // משמש לעיכוב
+
         // Initialize Firebase Database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
@@ -101,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
                 clickedIndex = i; // מוצא את המיקום במערך
                 break;
             }
+            saveGameStateToDatabase();
         }
 
         // אם הקלף כבר נבחר, מתעלם מהלחיצה
@@ -126,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < imageViewsArray.length; i++) {
             int imageViewId = getResources().getIdentifier("car" + (i + 1), "id", getPackageName()); // מוצא את מזהה התצוגה
             imageViewsArray[i] = findViewById(imageViewId);
+            saveGameStateToDatabase();
         }
     }
 
@@ -134,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < drawablesArray.length; i++) {
             int drawableId = getResources().getIdentifier("img_" + ((i % 8) + 1), "drawable", getPackageName()); // מוצא את מזהה התמונה
             drawablesArray[i] = drawableId;
+            saveGameStateToDatabase();
         }
     }
 
@@ -142,14 +150,23 @@ public class MainActivity extends AppCompatActivity {
         List<Integer> drawablesList = Arrays.asList(drawablesArray); // ממיר למבנה רשימה
         Collections.shuffle(drawablesList); // מערבב את הרשימה
         drawablesList.toArray(drawablesArray); // ממיר חזרה למערך
+        saveGameStateToDatabase();
     }
 
     private void saveGameStateToDatabase() { // data BASE.
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference gameStateRef = database.getReference("gameState");
+        Log.e("TAG", "gameStateRef = " + gameStateRef);
+        Log.e("TAG", "gameStateRef.child = " + gameStateRef.child("cards"));
+        Log.e("TAG", "gameStateRef.child = " + gameStateRef.child("cards"));
+
 
         // יצירת JSON למצב הלוח
         for (int i = 0; i < drawablesArray.length; i++) {
+            Log.e("TAG", "gameStateRef.child = " + gameStateRef.child("cards").child(String.valueOf(i)));
+            Log.e("TAG", "imageViewsArray[i].getTag() = " + imageViewsArray[i].getTag());
+
+
             gameStateRef.child("cards").child(String.valueOf(i))
                     .setValue(new CardState(drawablesArray[i], imageViewsArray[i].getTag() != null && (boolean) imageViewsArray[i].getTag()));
         }
