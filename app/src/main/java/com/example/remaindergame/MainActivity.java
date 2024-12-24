@@ -2,6 +2,7 @@ package com.example.remaindergame;
 
 // מחלקה ראשית של האפליקציה
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity; // מחלקה לניהול פעילות (Activity)
 import android.content.Intent; // משמש לעבור בין מסכים
 import android.os.Bundle; // משמש להעברת נתונים בין פעילויות
@@ -82,8 +83,12 @@ public class MainActivity extends AppCompatActivity {
             imageView.setOnClickListener(this::onBtnClicked);
         }
 
+
         // אתחול תצוגת התוצאות
         updateScoreDisplay();
+
+        listenToGameStateChanges();
+
     }
 
     // מטפל בלחיצות על קלפים
@@ -139,6 +144,51 @@ public class MainActivity extends AppCompatActivity {
         drawablesList.toArray(drawablesArray); // ממיר חזרה למערך
     }
 
+    private void saveGameStateToDatabase() { // data BASE.
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference gameStateRef = database.getReference("gameState");
+
+        // יצירת JSON למצב הלוח
+        for (int i = 0; i < drawablesArray.length; i++) {
+            gameStateRef.child("cards").child(String.valueOf(i))
+                    .setValue(new CardState(drawablesArray[i], imageViewsArray[i].getTag() != null && (boolean) imageViewsArray[i].getTag()));
+        }
+
+        // שמירת תור השחקן הנוכחי
+        gameStateRef.child("playerTurn").setValue(player1Turn ? 1 : 2);
+    }
+
+    private void listenToGameStateChanges() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference gameStateRef = database.getReference("gameState");
+
+        gameStateRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot cardSnapshot : snapshot.child("cards").getChildren()) {
+                    int index = Integer.parseInt(cardSnapshot.getKey());
+                    CardState cardState = cardSnapshot.getValue(CardState.class);
+
+                    if (cardState != null) {
+                        imageViewsArray[index].setImageResource(cardState.isFlipped() ? cardState.getImageId() : R.drawable.back32);
+                        imageViewsArray[index].setTag(cardState.isFlipped());
+                    }
+                }
+
+                // עדכון תור השחקן
+                player1Turn = snapshot.child("playerTurn").getValue(Integer.class) == 1;
+
+                updateScoreDisplay();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Failed to read game state.", error.toException());
+            }
+        });
+    }
+
+
     // מטפל בסיום התור
     private void turnEnd() {
         if (drawablesArray[card1].equals(drawablesArray[card2])) { // אם הקלפים זהים
@@ -166,9 +216,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         updateScoreDisplay(); // מעדכן את תצוגת התוצאות
+        saveGameStateToDatabase(); // שמירה של מצב הלוח
         count = 0; // מאפס את ספירת הקלפים
         card1 = -1;
         card2 = -1;
+
     }
 
     // מעדכן את תצוגת התוצאות
