@@ -175,8 +175,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                // עדכון תור השחקן
-                player1Turn = snapshot.child("playerTurn").getValue(Integer.class) == 1;
+
 
                 updateScoreDisplay();
             }
