@@ -1,16 +1,15 @@
 package com.example.remaindergame;
 
-// מחלקה ראשית של האפליקציה
-
-import androidx.appcompat.app.AppCompatActivity; // מחלקה לניהול פעילות (Activity)
-import android.content.Intent; // משמש לעבור בין מסכים
-import android.os.Bundle; // משמש להעברת נתונים בין פעילויות
-import android.os.Handler; // משמש להפעלת עיכוב בקוד
-import android.util.Log; // משמש לרישום הודעות לוג
-import android.view.View; // מייצג רכיב תצוגה באפליקציה
-import android.widget.ImageView; // רכיב תצוגה להצגת תמונות
-import android.widget.TextView; // רכיב תצוגה להצגת טקסט
-import android.widget.Toast; // משמש להצגת הודעות קצרות על המסך
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -18,73 +17,67 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Arrays; // מספק כלים לעבודה עם מערכים
-import java.util.Collections; // מספק כלים למיון וערבוב רשימות
-import java.util.List; // מייצג רשימה
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
-// מחלקת הפעילות הראשית
+// Main Activity class
 public class MainActivity extends AppCompatActivity {
-    private int count = 0; // סופר את מספר הקלפים הפתוחים
-    private int card1 = -1; // מזהה של הקלף הראשון שנבחר
-    private int card2 = -1; // מזהה של הקלף השני שנבחר
-    private int counterPlayer1 = 0; // נקודות של שחקן 1
-    private int counterPlayer2 = 0; // נקודות של שחקן 2
-    private boolean player1Turn = true; // מציין אם תורו של שחקן 1
-    private final ImageView[] imageViewsArray = new ImageView[16]; // מערך לאחסון תמונות הקלפים
-    private final Integer[] drawablesArray = new Integer[16]; // מערך לאחסון מזהי המשאבים (תמונות)
-    private final Handler handler = new Handler(); // משמש לעיכוב
-    private TextView scoreTextView; // רכיב להצגת תוצאות המשחק
+    private int count = 0; // Counts the open cards
+    private int card1 = -1; // First card index
+    private int card2 = -1; // Second card index
+    private int counterPlayer1 = 0; // Player 1 score
+    private int counterPlayer2 = 0; // Player 2 score
+    private boolean player1Turn = true; // Player 1's turn
+    private final ImageView[] imageViewsArray = new ImageView[16]; // Array for card ImageViews
+    private final Integer[] drawablesArray = new Integer[16]; // Array for card resources
+    private final Handler handler = new Handler(); // For delays
+    private TextView scoreTextView; // Score display
 
+    private DatabaseReference databaseRef; // Firebase database reference
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // קובע את הפריסה של המסך
+        setContentView(R.layout.activity_main);
+
         // Initialize Firebase Database
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+        databaseRef = database.getReference("game");
 
-// Create a User object
-        User user = new User("John", "john@example.com");
+        // Add a sample user to Firebase
+        addUserToDatabase("user1", new User("John", "john@example.com"));
+        addUserToDatabase("user2", new User("Doe", "doe@example.com"));
 
-// Write data
-        databaseReference.child("user1").setValue(user)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Log.d("Firebase", "Data written successfully.");
-                    } else {
-                        Log.d("Firebase", "Failed to write data: " + task.getException());
-                    }
-                });
-        databaseReference.child("user1").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                User user = dataSnapshot.getValue(User.class);
-                Log.d("Firebase", "User Name: " + user.getName());
-            }
-
-            @Override
-            public void onCancelled(DatabaseError error) {
-                Log.w("Firebase", "Failed to read value.", error.toException());
-            }
-        });
-
-
-        // אתחול תצוגת התוצאות
+        // Initialize score TextView
         scoreTextView = findViewById(R.id.scoreTextView);
 
-        fillImageViewsArray(); // מילוי המערך של רכיבי התמונות
-        fillDrawablesArray(); // מילוי המערך של מזהי התמונות
-        shuffleDrawablesArray(); // ערבוב המערך של התמונות
+        fillImageViewsArray(); // Fill card ImageViews array
+        fillDrawablesArray(); // Fill card drawables array
+        shuffleDrawablesArray(); // Shuffle card images
 
-        // קביעת מאזין לחיצה לכל תמונה
+        // Set click listeners for all cards
         for (ImageView imageView : imageViewsArray) {
             imageView.setOnClickListener(this::onBtnClicked);
         }
 
-        // אתחול תצוגת התוצאות
-        updateScoreDisplay();
+        updateScoreDisplay(); // Display initial score
+        updateDatabaseGameState();
     }
+
+    // Add a user to Firebase
+    private void addUserToDatabase(String userId, User user) {
+        databaseRef.child("users").child(userId).setValue(user)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Firebase", "User " + userId + " added successfully.");
+                    } else {
+                        Log.e("Firebase", "Failed to add user: " + task.getException());
+                    }
+                });
+    }
+
 
     // מטפל בלחיצות על קלפים
     public void onBtnClicked(View view) {
@@ -105,7 +98,8 @@ public class MainActivity extends AppCompatActivity {
 
         clickedImageView.setImageResource(drawablesArray[clickedIndex]); // מציג את התמונה המתאימה לקלף
         clickedImageView.setTag(true); // מסמן שהקלף נבחר
-        Log.e("xxxx", "line 59"); // רושם הודעת לוג
+        logCardFlip(clickedIndex);
+
         if (count == 0) { // אם זה הקלף הראשון שנבחר
             card1 = clickedIndex; // שומר את מיקומו
             count++;
@@ -148,6 +142,8 @@ public class MainActivity extends AppCompatActivity {
                 counterPlayer2++; // מוסיף נקודה לשחקן 2
             }
 
+            logMatch();
+
             Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show(); // מציג הודעה שהשחקן צדק
 
             if (counterPlayer1 + counterPlayer2 == 8) { // אם כל הקלפים נחשפו
@@ -166,6 +162,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         updateScoreDisplay(); // מעדכן את תצוגת התוצאות
+        updateDatabaseGameState();
+
         count = 0; // מאפס את ספירת הקלפים
         card1 = -1;
         card2 = -1;
@@ -176,6 +174,62 @@ public class MainActivity extends AppCompatActivity {
         String scoreText = "Player 1: " + counterPlayer1 + " - Player 2: " + counterPlayer2;
         scoreTextView.setText(scoreText);
     }
-}
+
+    // מעדכן את מצב המשחק במסד הנתונים של Firebase
+    private void updateDatabaseGameState() {
+        // יוצר אובייקט HashMap שיכיל את מצב המשחק
+        HashMap<String, Object> gameState = new HashMap<>();
+        gameState.put("player1Score", counterPlayer1); // מוסיף את הניקוד של שחקן 1
+        gameState.put("player2Score", counterPlayer2); // מוסיף את הניקוד של שחקן 2
+        gameState.put("playerTurn", player1Turn ? "Player 1" : "Player 2"); // קובע למי התור כרגע
+        gameState.put("cardsFlipped", count); // מוסיף את מספר הקלפים שנחשפו
+
+        // מעדכן את מסד הנתונים עם מצב המשחק
+        databaseRef.child("gameState").setValue(gameState)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Firebase", "Game state updated."); // רושם לוג במקרה של הצלחה
+                    } else {
+                        Log.e("Firebase", "Failed to update game state: " + task.getException()); // רושם לוג במקרה של כשלון
+                    }
+                });
+    }
+
+    // מתעד במסד הנתונים קלף שנחשף
+    private void logCardFlip(int cardIndex) {
+        // מוסיף רשומה חדשה ביומן המשחק עם מידע על הקלף שנחשף ומי חשף אותו
+        databaseRef.child("gameLog").push().setValue("Card flipped: " + cardIndex + " by " +
+                (player1Turn ? "Player 1" : "Player 2"));
+    }
+
+    // מתעד במסד הנתונים מתי נמצאה התאמה
+    private void logMatch() {
+        // מוסיף רשומה חדשה ביומן המשחק שמציינת מי מצא התאמה
+        databaseRef.child("gameLog").push().setValue("Match found by " +
+                (player1Turn ? "Player 1" : "Player 2"));
+    }
+
+    // מתעד את תוצאות המשחק במסד הנתונים
+    private void logEndGame() {
+        // יוצר אובייקט HashMap שיכיל את תוצאות המשחק
+        HashMap<String, Object> gameResult = new HashMap<>();
+        gameResult.put("winner", counterPlayer1 > counterPlayer2 ? "Player 1" : "Player 2"); // מוסיף את שם המנצח
+        gameResult.put("player1Score", counterPlayer1); // מוסיף את הניקוד של שחקן 1
+        gameResult.put("player2Score", counterPlayer2); // מוסיף את הניקוד של שחקן 2
+
+        // מעדכן את מסד הנתונים עם תוצאות המשחק
+        databaseRef.child("gameResult").setValue(gameResult)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Firebase", "Game result saved."); // רושם לוג במקרה של הצלחה
+                    } else {
+                        Log.e("Firebase", "Failed to save game result: " + task.getException()); // רושם לוג במקרה של כשלון
+                    }
+                });
+    }
+        }
+
+
+
 
 
