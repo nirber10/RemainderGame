@@ -146,11 +146,16 @@ public class MainActivity extends AppCompatActivity {
 
             Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show(); // מציג הודעה שהשחקן צדק
 
-            if (counterPlayer1 + counterPlayer2 == 8) { // אם כל הקלפים נחשפו
-                Intent intent = new Intent(MainActivity.this, EndScreen.class); // מעבר למסך הסיום
-                startActivity(intent);
-                return;
+            if (counterPlayer1 + counterPlayer2 == 8) { // בדיקה האם כל הקלפים נחשפו (8 זוגות במשחק)
+                Intent intent = new Intent(MainActivity.this, EndScreen.class); // יצירת Intent למעבר למסך הסיום
+                intent.putExtra("player1Score", counterPlayer1); // העברת הניקוד של שחקן 1 ל-Intent
+                intent.putExtra("player2Score", counterPlayer2); // העברת הניקוד של שחקן 2 ל-Intent
+                String winner = counterPlayer1 > counterPlayer2 ? "Player 1" : "Player 2"; // קביעת המנצח (השחקן עם הניקוד הגבוה יותר)
+                intent.putExtra("winner", winner); // העברת שם המנצח ל-Intent
+                startActivity(intent); // התחלת הפעולה למעבר למסך הסיום
+                return; // סיום הפונקציה (כדי שלא יבוצע קוד נוסף אחר כך)
             }
+
         } else { // אם הקלפים לא תואמים
             Toast.makeText(this, "Turn end", Toast.LENGTH_SHORT).show(); // מציג הודעה שתור הסתיים
             imageViewsArray[card1].setImageResource(R.drawable.back32); // מחזיר את התמונה לגב הקלף
@@ -208,7 +213,6 @@ public class MainActivity extends AppCompatActivity {
         databaseRef.child("gameLog").push().setValue("Match found by " +
                 (player1Turn ? "Player 1" : "Player 2"));
     }
-
     // מתעד את תוצאות המשחק במסד הנתונים
     private void logEndGame() {
         // יוצר אובייקט HashMap שיכיל את תוצאות המשחק
