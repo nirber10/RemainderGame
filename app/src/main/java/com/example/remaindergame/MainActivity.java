@@ -22,51 +22,52 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-// Main Activity class
+// מחלקת הפעילות הראשית של המשחק
 public class MainActivity extends AppCompatActivity {
-    private int count = 0; // Counts the open cards
-    private int card1 = -1; // First card index
-    private int card2 = -1; // Second card index
-    private int counterPlayer1 = 0; // Player 1 score
-    private int counterPlayer2 = 0; // Player 2 score
-    private boolean player1Turn = true; // Player 1's turn
-    private final ImageView[] imageViewsArray = new ImageView[16]; // Array for card ImageViews
-    private final Integer[] drawablesArray = new Integer[16]; // Array for card resources
-    private final Handler handler = new Handler(); // For delays
-    private TextView scoreTextView; // Score display
+    private int count = 0; // מונה כמות הקלפים הפתוחים כרגע
+    private int card1 = -1; // אינדקס הקלף הראשון שנבחר
+    private int card2 = -1; // אינדקס הקלף השני שנבחר
+    private int counterPlayer1 = 0; // ניקוד של שחקן 1
+    private int counterPlayer2 = 0; // ניקוד של שחקן 2
+    private boolean player1Turn = true; // תור שחקן 1 (אם שקר, זה תור שחקן 2)
+    private final ImageView[] imageViewsArray = new ImageView[16]; // מערך לכל הקלפים (תצוגה)
+    private final Integer[] drawablesArray = new Integer[16]; // מערך לכל הקלפים (משאבים)
+    private final Handler handler = new Handler(); // מנהל עבור השהיות
+    private TextView scoreTextView; // תצוגת הטקסט להצגת הניקוד
 
-    private DatabaseReference databaseRef; // Firebase database reference
+    private DatabaseReference databaseRef; // הפניה למסד הנתונים של Firebase
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // קביעת ממשק המשתמש עבור הפעילות
 
-        // Initialize Firebase Database
+        // אתחול מסד הנתונים של Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        databaseRef = database.getReference("game");
+        databaseRef = database.getReference("game"); // הגדרה של הנתיב במשחק
 
-        // Add a sample user to Firebase
+        // הוספת משתמשים לדוגמה למסד הנתונים
         addUserToDatabase("user1", new User("John", "john@example.com"));
         addUserToDatabase("user2", new User("Doe", "doe@example.com"));
 
-        // Initialize score TextView
+        // אתחול תצוגת הניקוד
         scoreTextView = findViewById(R.id.scoreTextView);
 
-        fillImageViewsArray(); // Fill card ImageViews array
-        fillDrawablesArray(); // Fill card drawables array
-        shuffleDrawablesArray(); // Shuffle card images
+        fillImageViewsArray(); // מילוי המערך של הקלפים
+        fillDrawablesArray(); // מילוי המערך של תמונות הקלפים
+        shuffleDrawablesArray(); // ערבוב תמונות הקלפים
 
-        // Set click listeners for all cards
+        // קביעת מאזין לחיצה לכל קלף
         for (ImageView imageView : imageViewsArray) {
             imageView.setOnClickListener(this::onBtnClicked);
         }
 
-        updateScoreDisplay(); // Display initial score
-        updateDatabaseGameState();
+        updateScoreDisplay(); // עדכון תצוגת הניקוד בתחילת המשחק
+        updateBoardState(); // עדכון מצב הלוח בתחילת המשחק
+        updateDatabaseGameState(); // עדכון מצב המשחק במסד הנתונים
     }
 
-    // Add a user to Firebase
+    // פונקציה להוספת משתמש למסד הנתונים
     private void addUserToDatabase(String userId, User user) {
         databaseRef.child("users").child(userId).setValue(user)
                 .addOnCompleteListener(task -> {
@@ -78,162 +79,162 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-
-    // מטפל בלחיצות על קלפים
+    // פונקציה שמטפלת בלחיצה על קלף
     public void onBtnClicked(View view) {
-        ImageView clickedImageView = (ImageView) view; // המרה של תצוגה ל-ImageView
+        ImageView clickedImageView = (ImageView) view;
 
-        int clickedIndex = -1; // מזהה של הקלף שנלחץ
+        // מציאת אינדקס הקלף שנלחץ
+        int clickedIndex = -1;
         for (int i = 0; i < imageViewsArray.length; i++) {
             if (imageViewsArray[i] == clickedImageView) {
-                clickedIndex = i; // מוצא את המיקום במערך
+                clickedIndex = i;
                 break;
             }
         }
 
-        // אם הקלף כבר נבחר, מתעלם מהלחיצה
+        // בדיקה אם הקלף כבר נחשף
         if (clickedImageView.getTag() != null && (boolean) clickedImageView.getTag()) {
             return;
         }
 
-        clickedImageView.setImageResource(drawablesArray[clickedIndex]); // מציג את התמונה המתאימה לקלף
-        clickedImageView.setTag(true); // מסמן שהקלף נבחר
-        logCardFlip(clickedIndex);
+        // חשיפת הקלף
+        clickedImageView.setImageResource(drawablesArray[clickedIndex]);
+        clickedImageView.setTag(true); // סימון הקלף כ"נחשף"
+        logCardFlip(clickedIndex); // עדכון במסד הנתונים על חשיפת קלף
+        updateBoardState(); // עדכון מצב הלוח
 
-        if (count == 0) { // אם זה הקלף הראשון שנבחר
-            card1 = clickedIndex; // שומר את מיקומו
+        // ניהול קלף ראשון ושני שנבחרו
+        if (count == 0) {
+            card1 = clickedIndex;
             count++;
-        } else if (count == 1) { // אם זה הקלף השני שנבחר
-            card2 = clickedIndex; // שומר את מיקומו
+        } else if (count == 1) {
+            card2 = clickedIndex;
             count++;
-            handler.postDelayed(this::turnEnd, 1000); // מעכב את הבדיקה בשנייה אחת
+            handler.postDelayed(this::turnEnd, 1000); // השהיה לפני סיום התור
         }
     }
 
-    // ממלא את מערך התצוגות של התמונות
+    // מילוי מערך תצוגת הקלפים
     private void fillImageViewsArray() {
         for (int i = 0; i < imageViewsArray.length; i++) {
-            int imageViewId = getResources().getIdentifier("car" + (i + 1), "id", getPackageName()); // מוצא את מזהה התצוגה
+            int imageViewId = getResources().getIdentifier("car" + (i + 1), "id", getPackageName());
             imageViewsArray[i] = findViewById(imageViewId);
         }
     }
 
-    // ממלא את מערך מזהי התמונות
+    // מילוי מערך המשאבים של הקלפים
     private void fillDrawablesArray() {
         for (int i = 0; i < drawablesArray.length; i++) {
-            int drawableId = getResources().getIdentifier("img_" + ((i % 8) + 1), "drawable", getPackageName()); // מוצא את מזהה התמונה
+            int drawableId = getResources().getIdentifier("img_" + ((i % 8) + 1), "drawable", getPackageName());
             drawablesArray[i] = drawableId;
         }
     }
 
-    // מערבב את מערך התמונות
+    // ערבוב הקלפים
     private void shuffleDrawablesArray() {
-        List<Integer> drawablesList = Arrays.asList(drawablesArray); // ממיר למבנה רשימה
-        Collections.shuffle(drawablesList); // מערבב את הרשימה
-        drawablesList.toArray(drawablesArray); // ממיר חזרה למערך
+        List<Integer> drawablesList = Arrays.asList(drawablesArray);
+        Collections.shuffle(drawablesList);
+        drawablesList.toArray(drawablesArray);
     }
 
-    // מטפל בסיום התור
+    // סיום תור
     private void turnEnd() {
-        if (drawablesArray[card1].equals(drawablesArray[card2])) { // אם הקלפים זהים
+        if (drawablesArray[card1].equals(drawablesArray[card2])) {
             if (player1Turn) {
-                counterPlayer1++; // מוסיף נקודה לשחקן 1
+                counterPlayer1++; // עדכון ניקוד שחקן 1
             } else {
-                counterPlayer2++; // מוסיף נקודה לשחקן 2
+                counterPlayer2++; // עדכון ניקוד שחקן 2
             }
 
-            logMatch();
+            logMatch(); // רישום הצלחה במסד הנתונים
+            Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
 
-            Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show(); // מציג הודעה שהשחקן צדק
-
-            if (counterPlayer1 + counterPlayer2 == 8) { // בדיקה האם כל הקלפים נחשפו (8 זוגות במשחק)
-                Intent intent = new Intent(MainActivity.this, EndScreen.class); // יצירת Intent למעבר למסך הסיום
-                intent.putExtra("player1Score", counterPlayer1); // העברת הניקוד של שחקן 1 ל-Intent
-                intent.putExtra("player2Score", counterPlayer2); // העברת הניקוד של שחקן 2 ל-Intent
-                String winner = counterPlayer1 > counterPlayer2 ? "Player 1" : "Player 2"; // קביעת המנצח (השחקן עם הניקוד הגבוה יותר)
-                intent.putExtra("winner", winner); // העברת שם המנצח ל-Intent
-                startActivity(intent); // התחלת הפעולה למעבר למסך הסיום
-                return; // סיום הפונקציה (כדי שלא יבוצע קוד נוסף אחר כך)
+            // בדיקת סיום המשחק
+            if (counterPlayer1 + counterPlayer2 == 8) {
+                Intent intent = new Intent(MainActivity.this, EndScreen.class);
+                intent.putExtra("player1Score", counterPlayer1);
+                intent.putExtra("player2Score", counterPlayer2);
+                String winner = counterPlayer1 > counterPlayer2 ? "Player 1" : "Player 2";
+                intent.putExtra("winner", winner);
+                startActivity(intent);
+                return;
             }
-
-        } else { // אם הקלפים לא תואמים
-            Toast.makeText(this, "Turn end", Toast.LENGTH_SHORT).show(); // מציג הודעה שתור הסתיים
-            imageViewsArray[card1].setImageResource(R.drawable.back32); // מחזיר את התמונה לגב הקלף
+        } else {
+            // החזרת הקלפים למצב מוסתר אם לא נמצא זוג
+            Toast.makeText(this, "Turn end", Toast.LENGTH_SHORT).show();
+            imageViewsArray[card1].setImageResource(R.drawable.back32);
             imageViewsArray[card2].setImageResource(R.drawable.back32);
-            imageViewsArray[card1].setTag(false); // מסמן שהקלף לא נבחר
+            imageViewsArray[card1].setTag(false);
             imageViewsArray[card2].setTag(false);
 
-            player1Turn = !player1Turn; // מעביר את התור לשחקן השני
+            player1Turn = !player1Turn; // העברת התור לשחקן השני
         }
 
-        updateScoreDisplay(); // מעדכן את תצוגת התוצאות
-        updateDatabaseGameState();
+        updateScoreDisplay(); // עדכון תצוגת הניקוד
+        updateBoardState(); // עדכון מצב הלוח
+        updateDatabaseGameState(); // עדכון מצב המשחק במסד הנתונים
 
-        count = 0; // מאפס את ספירת הקלפים
+        count = 0;
         card1 = -1;
         card2 = -1;
     }
 
-    // מעדכן את תצוגת התוצאות
+    // פונקציה לעדכון תצוגת הניקוד
     private void updateScoreDisplay() {
         String scoreText = "Player 1: " + counterPlayer1 + " - Player 2: " + counterPlayer2;
         scoreTextView.setText(scoreText);
     }
 
-    // מעדכן את מצב המשחק במסד הנתונים של Firebase
-    private void updateDatabaseGameState() {
-        // יוצר אובייקט HashMap שיכיל את מצב המשחק
-        HashMap<String, Object> gameState = new HashMap<>();
-        gameState.put("player1Score", counterPlayer1); // מוסיף את הניקוד של שחקן 1
-        gameState.put("player2Score", counterPlayer2); // מוסיף את הניקוד של שחקן 2
-        gameState.put("playerTurn", player1Turn ? "Player 1" : "Player 2"); // קובע למי התור כרגע
-        gameState.put("cardsFlipped", count); // מוסיף את מספר הקלפים שנחשפו
+    // פונקציה לעדכון מצב הלוח במסד הנתונים
+    private void updateBoardState() {
+        HashMap<String, Object> boardState = new HashMap<>();
 
-        // מעדכן את מסד הנתונים עם מצב המשחק
-        databaseRef.child("gameState").setValue(gameState)
+        for (int i = 0; i < imageViewsArray.length; i++) {
+            HashMap<String, Object> cardState = new HashMap<>();
+            cardState.put("imageId", drawablesArray[i]); // מזהה התמונה של הקלף
+            cardState.put("isFlipped", imageViewsArray[i].getTag() != null && (boolean) imageViewsArray[i].getTag());
+            cardState.put("position", i); // המיקום של הקלף בלוח
+
+            boardState.put("card" + i, cardState);
+        }
+
+        databaseRef.child("boardState").setValue(boardState)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Log.d("Firebase", "Game state updated."); // רושם לוג במקרה של הצלחה
+                        Log.d("Firebase", "Board state updated.");
                     } else {
-                        Log.e("Firebase", "Failed to update game state: " + task.getException()); // רושם לוג במקרה של כשלון
+                        Log.e("Firebase", "Failed to update board state: " + task.getException());
                     }
                 });
     }
 
-    // מתעד במסד הנתונים קלף שנחשף
+    // פונקציה לעדכון מצב המשחק במסד הנתונים
+    private void updateDatabaseGameState() {
+        HashMap<String, Object> gameState = new HashMap<>();
+        gameState.put("player1Score", counterPlayer1);
+        gameState.put("player2Score", counterPlayer2);
+        gameState.put("playerTurn", player1Turn ? "Player 1" : "Player 2");
+        gameState.put("cardsFlipped", count);
+
+        databaseRef.child("gameState").setValue(gameState)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d("Firebase", "Game state updated.");
+                    } else {
+                        Log.e("Firebase", "Failed to update game state: " + task.getException());
+                    }
+                });
+    }
+
+    // רישום חשיפת קלף במסד הנתונים
     private void logCardFlip(int cardIndex) {
-        // מוסיף רשומה חדשה ביומן המשחק עם מידע על הקלף שנחשף ומי חשף אותו
         databaseRef.child("gameLog").push().setValue("Card flipped: " + cardIndex + " by " +
                 (player1Turn ? "Player 1" : "Player 2"));
     }
 
-    // מתעד במסד הנתונים מתי נמצאה התאמה
+    // רישום התאמה שנמצאה במסד הנתונים
     private void logMatch() {
-        // מוסיף רשומה חדשה ביומן המשחק שמציינת מי מצא התאמה
         databaseRef.child("gameLog").push().setValue("Match found by " +
                 (player1Turn ? "Player 1" : "Player 2"));
     }
-    // מתעד את תוצאות המשחק במסד הנתונים
-    private void logEndGame() {
-        // יוצר אובייקט HashMap שיכיל את תוצאות המשחק
-        HashMap<String, Object> gameResult = new HashMap<>();
-        gameResult.put("winner", counterPlayer1 > counterPlayer2 ? "Player 1" : "Player 2"); // מוסיף את שם המנצח
-        gameResult.put("player1Score", counterPlayer1); // מוסיף את הניקוד של שחקן 1
-        gameResult.put("player2Score", counterPlayer2); // מוסיף את הניקוד של שחקן 2
-
-        // מעדכן את מסד הנתונים עם תוצאות המשחק
-        databaseRef.child("gameResult").setValue(gameResult)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Log.d("Firebase", "Game result saved."); // רושם לוג במקרה של הצלחה
-                    } else {
-                        Log.e("Firebase", "Failed to save game result: " + task.getException()); // רושם לוג במקרה של כשלון
-                    }
-                });
-    }
-        }
-
-
-
-
-
+}
