@@ -67,6 +67,52 @@ public class MainActivity extends AppCompatActivity {
         updateDatabaseGameState(); // עדכון מצב המשחק במסד הנתונים
     }
 
+    // פונקציה להאזנה בזמן אמת למסד הנתונים
+    private void addRealtimeListeners() {
+        // מאזין למצב הלוח
+        databaseRef.child("boardState").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                // עדכון הלוח במכשיר הנוכחי לפי מצב Firebase
+                for (DataSnapshot cardSnapshot : snapshot.getChildren()) {
+                    int position = cardSnapshot.child("position").getValue(Integer.class);
+                    boolean isFlipped = cardSnapshot.child("isFlipped").getValue(Boolean.class);
+                    if (isFlipped) {
+                        imageViewsArray[position].setImageResource(drawablesArray[position]);
+                        imageViewsArray[position].setTag(true);
+                    } else {
+                        imageViewsArray[position].setImageResource(R.drawable.back32);
+                        imageViewsArray[position].setTag(false);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Failed to read board state: " + error.getMessage());
+            }
+        });
+
+        // מאזין למצב המשחק
+        databaseRef.child("gameState").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                counterPlayer1 = snapshot.child("player1Score").getValue(Integer.class);
+                counterPlayer2 = snapshot.child("player2Score").getValue(Integer.class);
+                player1Turn = "Player 1".equals(snapshot.child("playerTurn").getValue(String.class));
+                count = snapshot.child("cardsFlipped").getValue(Integer.class);
+
+                updateScoreDisplay(); // עדכון תצוגת הניקוד
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Failed to read game state: " + error.getMessage());
+            }
+        });
+    }
+
+
     // פונקציה להוספת משתמש למסד הנתונים
     private void addUserToDatabase(String userId, User user) {
         databaseRef.child("users").child(userId).setValue(user)
