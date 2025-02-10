@@ -65,18 +65,24 @@ public class MainActivity extends AppCompatActivity {
         updateScoreDisplay(); // עדכון תצוגת הניקוד בתחילת המשחק
         updateBoardState(); // עדכון מצב הלוח בתחילת המשחק
         updateDatabaseGameState(); // עדכון מצב המשחק במסד הנתונים
+        addRealtimeListeners();
     }
 
     // פונקציה להאזנה בזמן אמת למסד הנתונים
     private void addRealtimeListeners() {
         // מאזין למצב הלוח
+        Log.d("XXX","addRealtimeListeners");
         databaseRef.child("boardState").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.e("XXXX","onDataChange");
                 // עדכון הלוח במכשיר הנוכחי לפי מצב Firebase
                 for (DataSnapshot cardSnapshot : snapshot.getChildren()) {
                     int position = cardSnapshot.child("position").getValue(Integer.class);
                     boolean isFlipped = cardSnapshot.child("isFlipped").getValue(Boolean.class);
+                    Log.e("XXXX", "position = " + position );
+                    Log.e("XXXX", "isFlipped = " + isFlipped );
+
                     if (isFlipped) {
                         imageViewsArray[position].setImageResource(drawablesArray[position]);
                         imageViewsArray[position].setTag(true);
@@ -274,8 +280,11 @@ public class MainActivity extends AppCompatActivity {
 
     // רישום חשיפת קלף במסד הנתונים
     private void logCardFlip(int cardIndex) {
-        databaseRef.child("gameLog").push().setValue("Card flipped: " + cardIndex + " by " +
-                (player1Turn ? "Player 1" : "Player 2"));
+        String text = "Card flipped: " + cardIndex + " by " +
+                (player1Turn ? "Player 1" : "Player 2");
+        Log.e("XXXXXX", text);
+
+        databaseRef.child("gameLog").push().setValue(text);
     }
 
     // רישום התאמה שנמצאה במסד הנתונים
