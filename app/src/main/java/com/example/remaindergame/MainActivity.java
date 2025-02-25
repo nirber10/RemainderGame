@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private final Integer[] drawablesArray = new Integer[16]; // מערך לכל הקלפים (משאבים)
     private final Handler handler = new Handler(); // מנהל עבור השהיות
     private TextView scoreTextView; // תצוגת הטקסט להצגת הניקוד
+    private static final String TAG = "MainActivity";
 
     private DatabaseReference databaseRef; // הפניה למסד הנתונים של Firebase
 
@@ -66,7 +67,32 @@ public class MainActivity extends AppCompatActivity {
         updateBoardState(); // עדכון מצב הלוח בתחילת המשחק
         updateDatabaseGameState(); // עדכון מצב המשחק במסד הנתונים
         addRealtimeListeners();
+
+        // Read from the database
+// Read from the database
+        databaseRef.child("isGameOn").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Boolean isGameOn = snapshot.getValue(Boolean.class);
+                if (isGameOn != null && isGameOn) {
+                    // המשחק כבר התחיל, שחקן מצטרף למשחק קיים
+                    Log.d(TAG, "Game is already running, joining...");
+                } else {
+                    // המשחק עדיין לא התחיל, המשתמש הנוכחי מתחיל אותו
+                    databaseRef.child("isGameOn").setValue(true);
+                    Log.d(TAG, "Starting a new game...");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "Failed to read isGameOn: " + error.getMessage());
+            }
+        });
+
+
     }
+
 
     // פונקציה להאזנה בזמן אמת למסד הנתונים
     private void addRealtimeListeners() {
@@ -166,28 +192,38 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // מילוי מערך תצוגת הקלפים
+    // מילוי מערך תצוגת הקלפים (ImageViews)
     private void fillImageViewsArray() {
         for (int i = 0; i < imageViewsArray.length; i++) {
             int imageViewId = getResources().getIdentifier("car" + (i + 1), "id", getPackageName());
             imageViewsArray[i] = findViewById(imageViewId);
+
+            // לוג ERROR כדי להדגיש את המידע ב-Logcat
+            Log.e("ImageViewArray", "Index: " + i + ", View ID: car" + (i + 1) + ", Object: " + imageViewsArray[i]);
         }
     }
 
-    // מילוי מערך המשאבים של הקלפים
+    // מילוי מערך המשאבים של הקלפים (drawables)
     private void fillDrawablesArray() {
         for (int i = 0; i < drawablesArray.length; i++) {
             int drawableId = getResources().getIdentifier("img_" + ((i % 8) + 1), "drawable", getPackageName());
             drawablesArray[i] = drawableId;
+
+            // לוג ERROR כדי להדגיש את ה-Drawable שנבחר
+            Log.e("DrawablesArray", "Index: " + i + ", Drawable ID: img_" + ((i % 8) + 1) + ", Resource ID: " + drawableId);
         }
     }
 
-    // ערבוב הקלפים
+    // ערבוב הקלפים עם לוגים
     private void shuffleDrawablesArray() {
         List<Integer> drawablesList = Arrays.asList(drawablesArray);
         Collections.shuffle(drawablesList);
         drawablesList.toArray(drawablesArray);
+
+        // לוג ERROR כדי לראות את הסדר של הקלפים לאחר ערבוב
+        Log.e("Shuffle", "Shuffled DrawablesArray: " + Arrays.toString(drawablesArray));
     }
+
 
     // סיום תור
     private void turnEnd() {
