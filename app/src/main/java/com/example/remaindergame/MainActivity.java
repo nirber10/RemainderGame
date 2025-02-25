@@ -56,6 +56,39 @@ public class MainActivity extends AppCompatActivity {
 
         fillImageViewsArray(); // מילוי המערך של הקלפים
         fillDrawablesArray(); // מילוי המערך של תמונות הקלפים
+
+
+        databaseRef.child("cardOrder").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    // השחקן הראשון - שומר את סדר הקלפים ב-Firebase
+                    List<Integer> drawablesList = Arrays.asList(drawablesArray);
+                    Collections.shuffle(drawablesList);
+                    drawablesList.toArray(drawablesArray);
+
+                    databaseRef.child("cardOrder").setValue(drawablesArray)
+                            .addOnSuccessListener(aVoid -> Log.d(" Firebase", "First player - card order saved."))
+                            .addOnFailureListener(e -> Log.e("Firebase", "Failed to save card order: " + e.getMessage()));
+                } else {
+                    // השחקן השני - מוריד את הסדר של הקלפים
+                    int i = 0;
+                    for (DataSnapshot cardSnapshot : snapshot.getChildren()) {
+                        drawablesArray[i] = cardSnapshot.getValue(Integer.class);
+                        i++;
+                    }
+                    Log.d("Firebase", "Second player - card order loaded.");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Failed to load card order: " + error.getMessage());
+            }
+        });
+
+
+
         shuffleDrawablesArray(); // ערבוב תמונות הקלפים
 
         // קביעת מאזין לחיצה לכל קלף
@@ -87,6 +120,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e(TAG, "Failed to read isGameOn: " + error.getMessage());
+            }
+        });
+
+        databaseRef.child("boardState").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    // השחקן הראשון - שמור את הלוח שלו
+                    updateBoardState();
+                    Log.d("Firebase", "First player - board state saved.");
+                } else {
+                    Log.d("Firebase", "Board state already exists.");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Failed to check board state: " + error.getMessage());
             }
         });
 
@@ -142,6 +193,34 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Firebase", "Failed to read game state: " + error.getMessage());
             }
         });
+
+        databaseRef.child("boardState").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    for (DataSnapshot cardSnapshot : snapshot.getChildren()) {
+                        int position = cardSnapshot.child("position").getValue(Integer.class);
+                        boolean isFlipped = cardSnapshot.child("isFlipped").getValue(Boolean.class);
+
+                        if (isFlipped) {
+                            imageViewsArray[position].setImageResource(drawablesArray[position]);
+                            imageViewsArray[position].setTag(true);
+                        } else {
+                            imageViewsArray[position].setImageResource(R.drawable.back32);
+                            imageViewsArray[position].setTag(false);
+                        }
+                    }
+                    Log.d("Firebase", "Board state loaded for new player.");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Failed to load board state: " + error.getMessage());
+            }
+        });
+
+
     }
 
 
