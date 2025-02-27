@@ -183,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
                 counterPlayer1 = snapshot.child("player1Score").getValue(Integer.class);
                 counterPlayer2 = snapshot.child("player2Score").getValue(Integer.class);
                 player1Turn = "Player 1".equals(snapshot.child("playerTurn").getValue(String.class));
-                count = snapshot.child("cardsFlipped").getValue(Integer.class);
 
                 updateScoreDisplay(); // עדכון תצוגת הניקוד
             }
@@ -348,8 +347,11 @@ public class MainActivity extends AppCompatActivity {
 
     // פונקציה לעדכון תצוגת הניקוד
     private void updateScoreDisplay() {
+        Log.e("XXXX","+updateScoreDisplay");
         String scoreText = "Player 1: " + counterPlayer1 + " - Player 2: " + counterPlayer2;
         scoreTextView.setText(scoreText);
+        Log.e("XXXX","-updateScoreDisplay");
+
     }
 
     // פונקציה לעדכון מצב הלוח במסד הנתונים
