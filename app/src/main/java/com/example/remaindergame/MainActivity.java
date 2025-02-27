@@ -1,5 +1,8 @@
 package com.example.remaindergame;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -24,6 +27,8 @@ import java.util.List;
 
 // מחלקת הפעילות הראשית של המשחק
 public class MainActivity extends AppCompatActivity {
+    private Boolean isGameOn = FALSE;
+    private int whoAmI = 1;
     private int count = 0; // מונה כמות הקלפים הפתוחים כרגע
     private int card1 = -1; // אינדקס הקלף הראשון שנבחר
     private int card2 = -1; // אינדקס הקלף השני שנבחר
@@ -61,15 +66,28 @@ public class MainActivity extends AppCompatActivity {
         databaseRef.child("cardOrder").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (!snapshot.exists()) {
+                if (!isGameOn) {
+
+                    //task 1: clear database
+
+
+                    //set isGameOn to TRUE
+                    isGameOn = TRUE;
+
+
+                    //task 2. set isGameOn to TRUE also in Database
+
                     // השחקן הראשון - שומר את סדר הקלפים ב-Firebase
                     List<Integer> drawablesList = Arrays.asList(drawablesArray);
                     Collections.shuffle(drawablesList);
                     drawablesList.toArray(drawablesArray);
 
-                    databaseRef.child("cardOrder").setValue(drawablesArray)
+                    databaseRef.child("cardOrder").setValue(drawablesList)
                             .addOnSuccessListener(aVoid -> Log.d(" Firebase", "First player - card order saved."))
                             .addOnFailureListener(e -> Log.e("Firebase", "Failed to save card order: " + e.getMessage()));
+                    whoAmI = 1;
+                    Log.d("whoAmI", "first player");
+
                 } else {
                     // השחקן השני - מוריד את הסדר של הקלפים
                     int i = 0;
@@ -78,6 +96,10 @@ public class MainActivity extends AppCompatActivity {
                         i++;
                     }
                     Log.d("Firebase", "Second player - card order loaded.");
+                    whoAmI = 2;
+                    Log.d("whoAmI", "Second player");
+
+
                 }
             }
 
@@ -102,11 +124,10 @@ public class MainActivity extends AppCompatActivity {
         addRealtimeListeners();
 
         // Read from the database
-// Read from the database
         databaseRef.child("isGameOn").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Boolean isGameOn = snapshot.getValue(Boolean.class);
+                isGameOn = snapshot.getValue(Boolean.class);
                 if (isGameOn != null && isGameOn) {
                     // המשחק כבר התחיל, שחקן מצטרף למשחק קיים
                     Log.d(TAG, "Game is already running, joining...");
@@ -235,8 +256,22 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    private boolean isMyTurn()
+    {
+        Log.e("isMyTurn", "whoAmI = " + whoAmI);
+        Log.e("isMyTurn", "player1Turn = " + player1Turn);
+        return (whoAmI == 1 && player1Turn == TRUE) || (whoAmI == 2 && player1Turn == FALSE);
+    }
     // פונקציה שמטפלת בלחיצה על קלף
     public void onBtnClicked(View view) {
+
+        //if not my turn do nothing
+        if(!isMyTurn())
+        {
+            Toast.makeText(this, "Not your turn...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         ImageView clickedImageView = (ImageView) view;
 
         // מציאת אינדקס הקלף שנלחץ
@@ -305,7 +340,12 @@ public class MainActivity extends AppCompatActivity {
 
     // סיום תור
     private void turnEnd() {
+        Log.e("XXXXX", "player1Turn = " + player1Turn);
+        Toast.makeText(this, "Turn end", Toast.LENGTH_SHORT).show();
+
+        // if there is a match
         if (drawablesArray[card1].equals(drawablesArray[card2])) {
+            //get who's turn from DB
             if (player1Turn) {
                 counterPlayer1++; // עדכון ניקוד שחקן 1
             } else {
@@ -317,6 +357,10 @@ public class MainActivity extends AppCompatActivity {
 
             // בדיקת סיום המשחק
             if (counterPlayer1 + counterPlayer2 == 8) {
+
+                isGameOn = FALSE;
+                //task 3. set in Database isGameOn to FALSE
+
                 Intent intent = new Intent(MainActivity.this, EndScreen.class);
                 intent.putExtra("player1Score", counterPlayer1);
                 intent.putExtra("player2Score", counterPlayer2);
@@ -327,12 +371,12 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             // החזרת הקלפים למצב מוסתר אם לא נמצא זוג
-            Toast.makeText(this, "Turn end", Toast.LENGTH_SHORT).show();
             imageViewsArray[card1].setImageResource(R.drawable.back32);
             imageViewsArray[card2].setImageResource(R.drawable.back32);
             imageViewsArray[card1].setTag(false);
             imageViewsArray[card2].setTag(false);
 
+            //write to DB
             player1Turn = !player1Turn; // העברת התור לשחקן השני
         }
 
@@ -399,7 +443,7 @@ public class MainActivity extends AppCompatActivity {
     private void logCardFlip(int cardIndex) {
         String text = "Card flipped: " + cardIndex + " by " +
                 (player1Turn ? "Player 1" : "Player 2");
-        Log.e("XXXXXX", text);
+       // Log.e("XXXXXX", text);
 
         databaseRef.child("gameLog").push().setValue(text);
     }
