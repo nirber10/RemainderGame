@@ -127,8 +127,10 @@ public class MainActivity extends AppCompatActivity {
         databaseRef.child("isGameOn").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                isGameOn = snapshot.getValue(Boolean.class);
-                if (isGameOn != null && isGameOn) {
+                Boolean gameState = snapshot.getValue(Boolean.class);
+                isGameOn = (gameState != null) ? gameState : false; // Set default to false if null
+
+                if (isGameOn) {
                     // המשחק כבר התחיל, שחקן מצטרף למשחק קיים
                     Log.d(TAG, "Game is already running, joining...");
                 } else {
@@ -143,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Failed to read isGameOn: " + error.getMessage());
             }
         });
+
 
         databaseRef.child("boardState").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -443,7 +446,7 @@ public class MainActivity extends AppCompatActivity {
     private void logCardFlip(int cardIndex) {
         String text = "Card flipped: " + cardIndex + " by " +
                 (player1Turn ? "Player 1" : "Player 2");
-       // Log.e("XXXXXX", text);
+        // Log.e("XXXXXX", text);
 
         databaseRef.child("gameLog").push().setValue(text);
     }
