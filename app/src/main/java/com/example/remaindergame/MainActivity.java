@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.internal.FallbackServiceBroker;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,7 +28,7 @@ import java.util.List;
 
 // מחלקת הפעילות הראשית של המשחק
 public class MainActivity extends AppCompatActivity {
-    private Boolean isGameOn = FALSE;
+    private boolean isGameOn = FALSE;
     private int whoAmI = 1;
     private int count = 0; // מונה כמות הקלפים הפתוחים כרגע
     private int card1 = -1; // אינדקס הקלף הראשון שנבחר
@@ -43,6 +44,19 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseReference databaseRef; // הפניה למסד הנתונים של Firebase
 
+    public void resetGameData() {
+
+        // מחיקת כל הנתונים של המשחק
+        databaseRef.setValue(null)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        System.out.println("הנתונים בפיירבייס אופסו בהצלחה!");
+                    } else {
+                        System.err.println("שגיאה באיפוס הנתונים: " + task.getException());
+                    }
+                });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,31 +65,41 @@ public class MainActivity extends AppCompatActivity {
         // אתחול מסד הנתונים של Firebase
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         databaseRef = database.getReference("game"); // הגדרה של הנתיב במשחק
+        DatabaseReference gameStateRef = databaseRef.child("isGameOn");
+        if (gameStateRef == null){
+            isGameOn = FALSE;
+        }
+        gameStateRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    isGameOn = snapshot.getValue(Boolean.class);
+                    if (isGameOn == FALSE) {
+                        resetGameData();
+                        Log.d("Firebase", "isGameOn: " + isGameOn);
+                        // עשה משהו עם gameState
+                    }
+                }
+            }
 
-        // הוספת משתמשים לדוגמה למסד הנתונים
-        addUserToDatabase("user1", new User("John", "john@example.com"));
-        addUserToDatabase("user2", new User("Doe", "doe@example.com"));
-
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "Failed to read game state", error.toException());
+            }
+        });
         // אתחול תצוגת הניקוד
         scoreTextView = findViewById(R.id.scoreTextView);
 
         fillImageViewsArray(); // מילוי המערך של הקלפים
         fillDrawablesArray(); // מילוי המערך של תמונות הקלפים
 
-
         databaseRef.child("cardOrder").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (!isGameOn) {
-
-                    //task 1: clear database
-
-
-                    //set isGameOn to TRUE
+                    //set isGameOn to TRUE also in Database
+                    databaseRef.child("isGameOn").setValue(true);
                     isGameOn = TRUE;
-
-
-                    //task 2. set isGameOn to TRUE also in Database
 
                     // השחקן הראשון - שומר את סדר הקלפים ב-Firebase
                     List<Integer> drawablesList = Arrays.asList(drawablesArray);
@@ -98,8 +122,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("Firebase", "Second player - card order loaded.");
                     whoAmI = 2;
                     Log.d("whoAmI", "Second player");
-
-
                 }
             }
 
@@ -108,8 +130,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Firebase", "Failed to load card order: " + error.getMessage());
             }
         });
-
-
 
         shuffleDrawablesArray(); // ערבוב תמונות הקלפים
 
@@ -128,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Boolean gameState = snapshot.getValue(Boolean.class);
-                isGameOn = (gameState != null) ? gameState : false; // Set default to false if null
+                boolean isGameOn = (gameState != null) ? gameState : false; // Set default to false if null
 
                 if (isGameOn) {
                     // המשחק כבר התחיל, שחקן מצטרף למשחק קיים
@@ -145,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Failed to read isGameOn: " + error.getMessage());
             }
         });
-
 
         databaseRef.child("boardState").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -164,10 +183,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Firebase", "Failed to check board state: " + error.getMessage());
             }
         });
-
-
     }
-
 
     // פונקציה להאזנה בזמן אמת למסד הנתונים
     private void addRealtimeListeners() {
@@ -204,6 +220,9 @@ public class MainActivity extends AppCompatActivity {
         databaseRef.child("gameState").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    return;
+                }
                 counterPlayer1 = snapshot.child("player1Score").getValue(Integer.class);
                 counterPlayer2 = snapshot.child("player2Score").getValue(Integer.class);
                 player1Turn = "Player 1".equals(snapshot.child("playerTurn").getValue(String.class));
@@ -242,10 +261,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Firebase", "Failed to load board state: " + error.getMessage());
             }
         });
-
-
     }
-
 
     // פונקציה להוספת משתמש למסד הנתונים
     private void addUserToDatabase(String userId, User user) {
@@ -361,8 +377,8 @@ public class MainActivity extends AppCompatActivity {
             // בדיקת סיום המשחק
             if (counterPlayer1 + counterPlayer2 == 8) {
 
-                isGameOn = FALSE;
-                //task 3. set in Database isGameOn to FALSE
+                //set in Database isGameOn to FALSE
+                databaseRef.child("isGameOn").setValue(false);
 
                 Intent intent = new Intent(MainActivity.this, EndScreen.class);
                 intent.putExtra("player1Score", counterPlayer1);
