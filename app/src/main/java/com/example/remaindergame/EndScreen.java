@@ -1,6 +1,8 @@
 package com.example.remaindergame;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,14 +27,28 @@ public class EndScreen extends AppCompatActivity {
         // איתור רכיבי TextView מתוך קובץ ה-XML של מסך הסיום
         TextView scoreTextView = findViewById(R.id.scoreTextView); // רכיב להצגת ניקוד השחקנים
         TextView winnerTextView = findViewById(R.id.winnerTextView); // רכיב להצגת המנצח
+        Button backToHomeButton = findViewById(R.id.backToHomeButton); // איתור הכפתור
+
 
         // בדיקה האם רכיבי ה-TextView נמצאים בתצוגה
         if (scoreTextView != null && winnerTextView != null) {
             scoreTextView.setText("Player 1: " + player1Score + " - Player 2: " + player2Score); // הצגת התוצאה
-            winnerTextView.setText("congratulations to the Winner: " + winner); // הצגת הודעת המנצח
+            if (winner.equals("Draw")) {
+                winnerTextView.setText("It's a Draw!"); // במקרה של תיקו
+            } else {
+                winnerTextView.setText(winner + " Wins!"); // הצגת הודעת המנצח
+            }
+
         } else {
             // במקרה שרכיבי ה-TextView לא נמצאו, תוצג הודעת שגיאה
             Toast.makeText(this, "TextViews not found in the layout!", Toast.LENGTH_SHORT).show();
         }
+        // הגדרת לחיצה על הכפתור למעבר למסך הראשי
+        backToHomeButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EndScreen.this, OpenActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish(); // סוגר את מסך הסיום
+        });
     }
 }
