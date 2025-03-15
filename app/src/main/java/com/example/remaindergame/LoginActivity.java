@@ -1,40 +1,36 @@
 package com.example.remaindergame;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.content.Intent; // מיובא לצורך שימוש בכוונות (Intent) למעבר בין מסכים
+import android.os.Bundle; // מיובא לצורך שמירה וטעינה של נתונים בעת מעבר בין פעילויות
+import android.view.View; // מיובא לצורך טיפול בלחיצות כפתור
+import android.widget.TextView; // מיובא לצורך הצגת טקסטים על המסך
+import android.widget.Toast; // מיובא לצורך הצגת הודעות טוסט
 
-import androidx.activity.EdgeToEdge;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import androidx.activity.result.ActivityResult; // מיובא לצורך קבלת תוצאות מחזרת פעולה
+import androidx.activity.result.ActivityResultCallback; // מיובא לצורך קבלת callback לתוצאה של Activity
+import androidx.activity.result.ActivityResultLauncher; // מיובא לצורך הרצה של פעילות עם תוצאה
+import androidx.activity.result.contract.ActivityResultContracts; // מיובא לצורך שימוש בהסכמים (contracts) של פעילויות
+import androidx.annotation.NonNull; // מיובא לצורך טיפול בקוד לא נלאה
+import androidx.appcompat.app.AppCompatActivity; // מיובא לצורך יצירת פעילויות עם ממשק עיצוב
+import com.bumptech.glide.Glide; // מיובא לצורך הצגת תמונות בפרופיל בעזרת Glide
+import com.google.android.gms.auth.api.signin.GoogleSignIn; // מיובא לצורך אינטגרציה עם כניסת גוגל
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount; // מיובא לצורך קבלת פרטי חשבון גוגל
+import com.google.android.gms.auth.api.signin.GoogleSignInClient; // מיובא לצורך יצירת לקוח כניסה ל-Google
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions; // מיובא לצורך הגדרת אפשרויות כניסת גוגל
+import com.google.android.gms.common.SignInButton; // מיובא לצורך הצגת כפתור כניסה לגוגל
+import com.google.android.gms.common.api.ApiException; // מיובא לצורך טיפול בשגיאות של גוגל
+import com.google.android.gms.tasks.OnCompleteListener; // מיובא לצורך טיפול בהשלמת משימות (Tasks)
+import com.google.android.gms.tasks.OnSuccessListener; // מיובא לצורך טיפול בהצלחת משימות
+import com.google.android.gms.tasks.Task; // מיובא לצורך עבודה עם משימות
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.GoogleAuthProvider;
-import com.example.remaindergame.R;
+import com.google.firebase.FirebaseApp; // מיובא לצורך אתחול Firebase
+import com.google.firebase.auth.AuthCredential; // מיובא לצורך טיפול בהסמכות גישה
+import com.google.firebase.auth.AuthResult; // מיובא לצורך טיפול בתוצאות כניסה
+import com.google.firebase.auth.FirebaseAuth; // מיובא לצורך עבודה עם Firebase Authentication
+import com.google.firebase.auth.GoogleAuthProvider; // מיובא לצורך עבודה עם הספק Google לאימות
+import com.example.remaindergame.R; // מיובא לצורך עבודה עם קובצי משאבים (resources)
+
 import java.util.Objects;
 
 // מחלקת הפעילות לכניסה (LoginActivity)
@@ -48,38 +44,36 @@ public class LoginActivity extends AppCompatActivity {
 
     // משתנה המפעיל פעילות ומחזיר תוצאה
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
+            new ActivityResultContracts.StartActivityForResult(), // התחברות עם הסכם (contract) להתחלת פעילות שמחזירה תוצאה
+            new ActivityResultCallback<ActivityResult>() { // callback לאחר סיום הפעילות
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == RESULT_OK) { // בדיקת הצלחת הפעולה
-                        Task<GoogleSignInAccount> accountTask = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                        Task<GoogleSignInAccount> accountTask = GoogleSignIn.getSignedInAccountFromIntent(result.getData()); // קבלת נתונים מהפעילות
                         try {
-                            GoogleSignInAccount signInAccount = accountTask.getResult(ApiException.class); // קבלת פרטי חשבון
-                            AuthCredential authCredential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
-                            auth.signInWithCredential(authCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                            GoogleSignInAccount signInAccount = accountTask.getResult(ApiException.class); // קבלת פרטי חשבון גוגל
+                            AuthCredential authCredential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null); // יצירת הסמכה (credential) עם טוקן הגישה
+                            auth.signInWithCredential(authCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() { // ביצוע כניסה עם הסמכה
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
                                     if (task.isSuccessful()) { // אם הכניסה הצליחה
                                         auth = FirebaseAuth.getInstance(); // קבלת המשתמש המחובר
-                                        // טוען תמונת פרופיל באמצעות Glide
-                                        Glide.with(LoginActivity.this)
-                                                .load(Objects.requireNonNull(auth.getCurrentUser()).getPhotoUrl())
-                                                .into(imageView);
-                                        name.setText(auth.getCurrentUser().getDisplayName()); // שם המשתמש
-                                        mail.setText(auth.getCurrentUser().getEmail()); // דוא"ל המשתמש
-                                        Toast.makeText(LoginActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
-                                        // מעבר לפעילות הבאה
-                                        Intent intent = new Intent(LoginActivity.this, OpenActivity.class);
-                                        intent.putExtra("USERNAME", auth.getCurrentUser().getDisplayName()); // מעביר שם המשתמש
-                                        startActivity(intent);
+                                        Glide.with(LoginActivity.this) // טוען תמונת פרופיל בעזרת Glide
+                                                .load(Objects.requireNonNull(auth.getCurrentUser()).getPhotoUrl()) // טוען את תמונת הפרופיל של המשתמש
+                                                .into(imageView); // מציב את התמונה ב-ImageView
+                                        name.setText(auth.getCurrentUser().getDisplayName()); // מציב את שם המשתמש ב-TextView
+                                        mail.setText(auth.getCurrentUser().getEmail()); // מציב את הדוא"ל ב-TextView
+                                        Toast.makeText(LoginActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show(); // מציג הודעת הצלחה
+                                        Intent intent = new Intent(LoginActivity.this, OpenActivity.class); // מעבר למסך הבא
+                                        intent.putExtra("USERNAME", auth.getCurrentUser().getDisplayName()); // מעביר את שם המשתמש כפרמטר
+                                        startActivity(intent); // מתחיל את הפעילות הבאה
                                     } else { // אם הכניסה נכשלה
-                                        Toast.makeText(LoginActivity.this, "Failed to sign in: " + task.getException(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(LoginActivity.this, "Failed to sign in: " + task.getException(), Toast.LENGTH_SHORT).show(); // מציג הודעת שגיאה
                                     }
                                 }
                             });
-                        } catch (ApiException e) {
-                            e.printStackTrace(); // טיפול בשגיאות
+                        } catch (ApiException e) { // טיפול בשגיאות בעת ניסיון להתחבר עם גוגל
+                            e.printStackTrace(); // הדפסת שגיאה
                         }
                     }
                 }
@@ -92,57 +86,57 @@ public class LoginActivity extends AppCompatActivity {
         FirebaseApp.initializeApp(this); // אתחול Firebase
 
         // אתחול רכיבים גרפיים
-        imageView = findViewById(R.id.profileImage);
-        name = findViewById(R.id.nameTV);
-        mail = findViewById(R.id.mailTV);
+        imageView = findViewById(R.id.profileImage); // אתחול ImageView להצגת תמונת פרופיל
+        name = findViewById(R.id.nameTV); // אתחול TextView להצגת שם המשתמש
+        mail = findViewById(R.id.mailTV); // אתחול TextView להצגת דוא"ל המשתמש
 
         // הגדרת אפשרויות כניסה ל-Google
-        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.client_id)) // מזהה לקוח (Client ID)
+        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) // יצירת אובייקט של אפשרויות כניסה
+                .requestIdToken(getString(R.string.client_id)) // בקשת מזהה לקוח
                 .requestEmail() // בקשת דוא"ל המשתמש
-                .build();
+                .build(); // בונה את האובייקט עם ההגדרות
 
         googleSignInClient = GoogleSignIn.getClient(LoginActivity.this, options); // יצירת לקוח Google Sign-In
         auth = FirebaseAuth.getInstance(); // אתחול Firebase Authentication
 
         // מאזין ללחיצה על כפתור כניסה
-        SignInButton signInButton = findViewById(R.id.signIn);
-        signInButton.setOnClickListener(new View.OnClickListener() {
+        SignInButton signInButton = findViewById(R.id.signIn); // אתחול כפתור כניסה
+        signInButton.setOnClickListener(new View.OnClickListener() { // מאזין ללחיצה על הכפתור
             @Override
             public void onClick(View view) {
-                Intent intent = googleSignInClient.getSignInIntent(); // פתיחת פעילות כניסה ל-Google
-                activityResultLauncher.launch(intent); // מפעיל את הפעילות
+                Intent intent = googleSignInClient.getSignInIntent(); // יצירת כוונה (Intent) לפתיחת פעילות כניסה ל-Google
+                activityResultLauncher.launch(intent); // מפעיל את הפעילות ומחכה לתוצאה
             }
         });
 
         // מאזין ללחיצה על כפתור יציאה
-        MaterialButton signOut = findViewById(R.id.signout);
-        signOut.setOnClickListener(new View.OnClickListener() {
+        MaterialButton signOut = findViewById(R.id.signout); // אתחול כפתור יציאה
+        signOut.setOnClickListener(new View.OnClickListener() { // מאזין ללחיצה על כפתור היציאה
             @Override
             public void onClick(View view) {
                 // מאזין לשינויים במצב האימות
-                FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+                FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() { // מאזין לשינויים במצב האימות
                     @Override
                     public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                         if (firebaseAuth.getCurrentUser() == null) { // אם המשתמש יצא
-                            googleSignInClient.signOut().addOnSuccessListener(new OnSuccessListener<Void>() {
+                            googleSignInClient.signOut().addOnSuccessListener(new OnSuccessListener<Void>() { // מבצע יציאה מגוגל
                                 @Override
-                                public void onSuccess(Void unused) {
-                                    Toast.makeText(LoginActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(LoginActivity.this, LoginActivity.class)); // מעבר חזרה למסך כניסה
+                                public void onSuccess(Void unused) { // בהצלחה
+                                    Toast.makeText(LoginActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show(); // הודעת הצלחה
+                                    startActivity(new Intent(LoginActivity.this, LoginActivity.class)); // חוזר למסך הכניסה
                                 }
                             });
                         }
                     }
                 });
-                FirebaseAuth.getInstance().signOut(); // מבצע יציאה
+                FirebaseAuth.getInstance().signOut(); // מבצע יציאה מ-Firebase
             }
         });
 
         // אם המשתמש כבר מחובר
-        if (auth.getCurrentUser() != null) {
-            startActivity(new Intent(LoginActivity.this, OpenActivity.class)); // מעבר למסך הבא
-            finish(); // מסיים את הפעילות הנוכחית
+        if (auth.getCurrentUser() != null) { // אם יש משתמש מחובר
+            startActivity(new Intent(LoginActivity.this, OpenActivity.class)); // מעבר לפעילות הבאה
+            finish(); // סיום הפעילות הנוכחית
         }
     }
 }
