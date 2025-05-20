@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.internal.FallbackServiceBroker;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -92,6 +91,38 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // הוספת מאזין שידאג שכל השחקנים יעברו למסך הסיום במקביל כאשר המשחק מסתיים
+        databaseRef.child("isGameOn").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Boolean gameState = snapshot.getValue(Boolean.class); // מקבל את מצב המשחק מהמסד (true = פעיל, false = הסתיים)
+                if (gameState != null && !gameState) { // אם המשחק הסתיים
+                    Intent intent = new Intent(MainActivity.this, EndScreen.class); // יצירת מעבר למסך הסיום
+                    intent.putExtra("player1Score", counterPlayer1); // העברת ניקוד של שחקן 1
+                    intent.putExtra("player2Score", counterPlayer2); // העברת ניקוד של שחקן 2
+
+                    String winner;
+                    if (counterPlayer1 == counterPlayer2) { // בדיקה אם יש תיקו
+                        winner = "Draw"; // במקרה של תיקו
+                    } else {
+                        winner = counterPlayer1 > counterPlayer2 ? "Player 1" : "Player 2"; // קביעת המנצח לפי הניקוד
+                    }
+                    intent.putExtra("winner", winner); // העברת שם המנצח למסך הסיום
+
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // דגלים שמנקים את היסטוריית המסכים הקודמים
+                    startActivity(intent); // התחלת המסך החדש (מסך הסיום)
+                    finish(); // סגירת הפעילות הנוכחית (MainActivity)
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // טיפול בשגיאות בקריאת הנתונים מהמסד (לא חובה במקרה הזה)
+            }
+        });
+
+
+
         // שם את הניקוד מהXML למסך קורא לו.
         scoreTextView = findViewById(R.id.scoreTextView);
 
@@ -159,6 +190,7 @@ public class MainActivity extends AppCompatActivity {
                 boolean isGameOn = (gameState != null) ? gameState : false;  // אם gameState הוא null, נגדיר את המצב כ-false (המשחק לא התחיל)
 
                 if (isGameOn) {  // אם המשחק כבר התחיל
+
                     // המשחק כבר התחיל, שחקן מצטרף למשחק קיים
                     Log.d(TAG, "Game is already running, joining...");  // רישום ב-log שהמשחק כבר התחיל והשחקן מצטרף
                 } else {  // אם המשחק לא התחיל
@@ -173,7 +205,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Failed to read isGameOn: " + error.getMessage());  // רישום שגיאה ב-log
             }
         });
-
 
 
         databaseRef.child("boardState").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -283,6 +314,26 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // רק אם המשחק עדיין רץ ולא הסתיים, מאפסים את הדאטה
+        if (isGameOn) {
+            resetGameData();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        // אם המשחק לא הושלם, תעשה איפוס
+        if (isGameOn) {
+            resetGameData();  // איפוס הנתונים
+        }
+    }
+
     // פונקציה להוספת משתמש למסד הנתונים
     private void addUserToDatabase(String userId, User user) {
         // הגדרה של נתיב מסד הנתונים עבור המשתמש החדש
@@ -353,10 +404,10 @@ public class MainActivity extends AppCompatActivity {
     }
     //הסבר
     //הפונקציה בודקת אם זה תור השחקן. אם לא, היא מחזירה הודעה שהשחקן לא בתור ולא עושה כלום.
-     //אם זה כן תור השחקן, היא מחשבת את אינדקס הקלף שנלחץ.
-     //אם הקלף כבר נחשף, הפונקציה מחזירה ולא עושה כלום.
-     //אם הקלף לא נחשף, היא חושפת אותו (מציגה את התמונה שלו) ומעדכנת את ה-Tag של ה-ImageView לסמן שהוא נחשף.
-     //הפונקציה שומרת את מצב הקלפים שנבחרו וממתינה לפני שהיא משווה בין השניים או מבצעת סיום תור.
+    //אם זה כן תור השחקן, היא מחשבת את אינדקס הקלף שנלחץ.
+    //אם הקלף כבר נחשף, הפונקציה מחזירה ולא עושה כלום.
+    //אם הקלף לא נחשף, היא חושפת אותו (מציגה את התמונה שלו) ומעדכנת את ה-Tag של ה-ImageView לסמן שהוא נחשף.
+    //הפונקציה שומרת את מצב הקלפים שנבחרו וממתינה לפני שהיא משווה בין השניים או מבצעת סיום תור.
 
 
 
@@ -371,8 +422,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     //הפונקציה הזו עוברת על כל המיקומים במערך imageViewsArray.
-     //היא בונה שם (ID) לכל ImageView (למשל "car1", "car2" וכו').
-     // הפונקציה תמצא כל אחד מהם לפי ה-ID ותשייך אותו למקום הנכון במערך כך שיהיה לך גישה אליו בקלות בקוד.
+    //היא בונה שם (ID) לכל ImageView (למשל "car1", "car2" וכו').
+    // הפונקציה תמצא כל אחד מהם לפי ה-ID ותשייך אותו למקום הנכון במערך כך שיהיה לך גישה אליו בקלות בקוד.
 
 
 
@@ -391,10 +442,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //ב"דלפק הראשון" אתה שם תמונות על הדלפק.
+    //ב"דלפק השני" אתה שם מספרים שמייצגים את התמונות, ולא את התמונות עצמם.
+    //אז פשוט – בדלפק הראשון יש לך תמונות, ובדלפק השני יש לך מספרים שמראים לאן לשלוח את התמונות.
+
 
     // הבדל בין השניים
     //אחד ממלא את המערך בתמונות עצמן (המשאבים) fillDrawablesArray
-     //ה-ImageView הוא האלמנט הגרפי שמציג את התמונה על המסך, כלומר כל ImageView יהיה אחראי להציג את התמונה המתאימה בתור קלף במשחק.
+    //ה-ImageView הוא האלמנט הגרפי שמציג את התמונה על המסך, כלומר כל ImageView יהיה אחראי להציג את התמונה המתאימה בתור קלף במשחק.
 
     // ערבוב הקלפים עם לוגים
     private void shuffleDrawablesArray() {
@@ -412,14 +467,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-//Intent הוא אובייקט שמייצג פעולה שאנחנו רוצים לבצע במערכת האנדרואיד. הוא יכול לשמש ל:
+    //Intent הוא אובייקט שמייצג פעולה שאנחנו רוצים לבצע במערכת האנדרואיד. הוא יכול לשמש ל:
     // סיום תור
     private void turnEnd() {
         // הדפסת לוג עם מצב התור של שחקן 1 (player1Turn)
         Log.e("XXXXX", "player1Turn = " + player1Turn);
 
-        // הצגת הודעת Toast שמסבירה שהתור הסתיים
-        Toast.makeText(this, "Turn end", Toast.LENGTH_SHORT).show();
 
         // אם יש התאמה בין הקלפים
         if (drawablesArray[card1].equals(drawablesArray[card2])) {
@@ -441,16 +494,14 @@ public class MainActivity extends AppCompatActivity {
                 // אם המשחק הסתיים, משתנים מצב המשחק ב-Firebase
                 databaseRef.child("isGameOn").setValue(false);
 
-                // יצירת Intent כדי לעבור למסך הסיום
-                Intent intent = new Intent(MainActivity.this, EndScreen.class);
-                intent.putExtra("player1Score", counterPlayer1);  // מוסיף את ניקוד שחקן 1 למסך הסיום
-                intent.putExtra("player2Score", counterPlayer2);  // מוסיף את ניקוד שחקן 2 למסך הסיום
-                String winner = counterPlayer1 > counterPlayer2 ? "Player 1" : "Player 2";  // קובע את המנצח
-                intent.putExtra("winner", winner);  // מוסיף את שם המנצח למסך הסיום
-                startActivity(intent); // מתחילים את מסך הסיום
+                // כאן הסרת מעבר ישיר למסך הסיום, יטופל ע"י המאזין שהוספנו ב-onCreate
                 return; // יוצאים מהפונקציה
             }
         } else {
+
+            // הצגת הודעת Toast שמסבירה שהתור הסתיים
+            Toast.makeText(this, "Turn end", Toast.LENGTH_SHORT).show();
+
             // החזרת הקלפים למצב מוסתר אם לא הייתה התאמה
             imageViewsArray[card1].setImageResource(R.drawable.back32);
             imageViewsArray[card2].setImageResource(R.drawable.back32);
@@ -575,3 +626,4 @@ public class MainActivity extends AppCompatActivity {
                 (player1Turn ? "Player 1" : "Player 2"));
     }
 }
+

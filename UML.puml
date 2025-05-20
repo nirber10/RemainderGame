@@ -1,0 +1,72 @@
+@startuml
+class com.example.remaindergame.CardState {
+- int imageId
+- boolean flipped
+}
+
+class com.example.remaindergame.ExampleInstrumentedTest {
+}
+class com.example.remaindergame.OpenActivity {
+}
+class com.example.remaindergame.ExampleUnitTest {
+}
+class com.example.remaindergame.LoginActivity {
+~ FirebaseAuth auth
+~ GoogleSignInClient googleSignInClient
+~ ShapeableImageView imageView
+~ TextView name
+- ActivityResultLauncher<Intent> activityResultLauncher
+}
+
+class com.example.remaindergame.MainActivity {
+- boolean isGameOn
+- int whoAmI
+- int count
+- int card1
+- int card2
+- int counterPlayer1
+- int counterPlayer2
+- boolean player1Turn
+- ImageView[] imageViewsArray
+- Integer[] drawablesArray
+- Handler handler
+- TextView scoreTextView
+- {static} String TAG
+- DatabaseReference databaseRef
+}
+
+class com.example.remaindergame.Register {
+}
+class com.example.remaindergame.SettingsActivity {
+}
+class com.example.remaindergame.register1 {
+}
+class com.example.remaindergame.GameActivity {
+}
+class com.example.remaindergame.User {
+- String name
+- String email
+}
+
+class com.example.remaindergame.gameroom {
+- DatabaseReference databaseRef
+- String roomId
+- String playerId
+- boolean isPlayer1
+- int counterPlayer1
+- boolean player1Turn
+}
+
+class com.example.remaindergame.EndScreen {
+}
+
+
+androidx.appcompat.app.AppCompatActivity <|-- com.example.remaindergame.OpenActivity
+androidx.appcompat.app.AppCompatActivity <|-- com.example.remaindergame.LoginActivity
+androidx.appcompat.app.AppCompatActivity <|-- com.example.remaindergame.MainActivity
+androidx.appcompat.app.AppCompatActivity <|-- com.example.remaindergame.SettingsActivity
+androidx.appcompat.app.AppCompatActivity <|-- com.example.remaindergame.register1
+androidx.appcompat.app.AppCompatActivity <|-- com.example.remaindergame.GameActivity
+androidx.appcompat.app.AppCompatActivity <|-- com.example.remaindergame.gameroom
+androidx.appcompat.app.AppCompatActivity <|-- com.example.remaindergame.EndScreen
+@enduml
