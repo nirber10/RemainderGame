@@ -36,7 +36,7 @@ import java.util.Objects;
 // מחלקת הפעילות לכניסה (LoginActivity)
 public class LoginActivity extends AppCompatActivity {
 
-    // משתנים גלובליים
+    // משתנים
     FirebaseAuth auth; // ניהול אימות משתמשים
     GoogleSignInClient googleSignInClient; // לקוח כניסה ל-Google
     ShapeableImageView imageView; // להצגת תמונת פרופיל המשתמש
@@ -47,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(), // התחברות עם הסכם (contract) להתחלת פעילות שמחזירה תוצאה
             new ActivityResultCallback<ActivityResult>() { // callback לאחר סיום הפעילות
                 @Override
-                public void onActivityResult(ActivityResult result) {
+                public void onActivityResult(ActivityResult result) { // האם מילאת נכון את הטופס
                     if (result.getResultCode() == RESULT_OK) { // בדיקת הצלחת הפעולה
                         Task<GoogleSignInAccount> accountTask = GoogleSignIn.getSignedInAccountFromIntent(result.getData()); // קבלת נתונים מהפעילות
                         try {
@@ -90,22 +90,22 @@ public class LoginActivity extends AppCompatActivity {
         name = findViewById(R.id.nameTV); // אתחול TextView להצגת שם המשתמש
         mail = findViewById(R.id.mailTV); // אתחול TextView להצגת דוא"ל המשתמש
 
-        // הגדרת אפשרויות כניסה ל-Google
+        // הגדרת אפשרויות כניסה ל-Google - מילוי טופס גוגל - פרטים לאפייון תהליך הכניסה
         GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) // יצירת אובייקט של אפשרויות כניסה
                 .requestIdToken(getString(R.string.client_id)) // בקשת מזהה לקוח
                 .requestEmail() // בקשת דוא"ל המשתמש
                 .build(); // בונה את האובייקט עם ההגדרות
 
-        googleSignInClient = GoogleSignIn.getClient(LoginActivity.this, options); // יצירת לקוח Google Sign-In
+        googleSignInClient = GoogleSignIn.getClient(LoginActivity.this, options); // יצירת לקוח Google Sign-In - מביא לגוגל את הטופס
         auth = FirebaseAuth.getInstance(); // אתחול Firebase Authentication
 
         // מאזין ללחיצה על כפתור כניסה
         SignInButton signInButton = findViewById(R.id.signIn); // אתחול כפתור כניסה
-        signInButton.setOnClickListener(new View.OnClickListener() { // מאזין ללחיצה על הכפתור
+        signInButton.setOnClickListener(new View.OnClickListener() { //  מאזין ללחיצה על הכפתור - שילחצו על הכפתור תלך ל106
             @Override
             public void onClick(View view) {
                 Intent intent = googleSignInClient.getSignInIntent(); // יצירת כוונה (Intent) לפתיחת פעילות כניסה ל-Google
-                activityResultLauncher.launch(intent); // מפעיל את הפעילות ומחכה לתוצאה
+                activityResultLauncher.launch(intent); // מפעיל את הפעילות ומחכה לתוצאה - שולח את הטופס
             }
         });
 

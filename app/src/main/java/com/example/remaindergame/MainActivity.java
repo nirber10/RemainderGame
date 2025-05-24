@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // מחלקת הפעילות הראשית של המשחק
 public class MainActivity extends AppCompatActivity {
@@ -58,6 +59,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    // onCreate - נקרא פעם אחת בלבד כאשר האקטיביטי נוצר
+    // יצירת מאזינים לאירועים
+    //אתחול חיבורי Firebase, מסדי נתונים וכו' ואתחול משתנים
+
+    // OnStart - ו פונקציה במחזור החיים של האקטיביטי (Activity), והיא נקראת בכל פעם שהמסך נהיה גלוי למשתמש.
+    //כלומר: אם המשתמש פותח את המסך, או חוזר אליו – onStart() תופעל.
+    //הפעלת מאזינים מ-Firebase ורענון נתונים מהשרת
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // קביעת ממשק המשתמש עבור הפעילות
@@ -91,35 +99,51 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // הוספת מאזין שידאג שכל השחקנים יעברו למסך הסיום במקביל כאשר המשחק מסתיים
         databaseRef.child("isGameOn").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Boolean gameState = snapshot.getValue(Boolean.class); // מקבל את מצב המשחק מהמסד (true = פעיל, false = הסתיים)
-                if (gameState != null && !gameState) { // אם המשחק הסתיים
-                    Intent intent = new Intent(MainActivity.this, EndScreen.class); // יצירת מעבר למסך הסיום
-                    intent.putExtra("player1Score", counterPlayer1); // העברת ניקוד של שחקן 1
-                    intent.putExtra("player2Score", counterPlayer2); // העברת ניקוד של שחקן 2
+                Boolean gameState = snapshot.getValue(Boolean.class);
+                if (gameState != null && !gameState) {
+                    // המשחק הסתיים — קבלת ניקוד מעודכן מהמסד
+                    databaseRef.child("finalScores").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            Integer p1Score = dataSnapshot.child("player1Score").getValue(Integer.class);
+                            Integer p2Score = dataSnapshot.child("player2Score").getValue(Integer.class);
 
-                    String winner;
-                    if (counterPlayer1 == counterPlayer2) { // בדיקה אם יש תיקו
-                        winner = "Draw"; // במקרה של תיקו
-                    } else {
-                        winner = counterPlayer1 > counterPlayer2 ? "Player 1" : "Player 2"; // קביעת המנצח לפי הניקוד
-                    }
-                    intent.putExtra("winner", winner); // העברת שם המנצח למסך הסיום
+                            int score1 = p1Score != null ? p1Score : 0;
+                            int score2 = p2Score != null ? p2Score : 0;
 
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // דגלים שמנקים את היסטוריית המסכים הקודמים
-                    startActivity(intent); // התחלת המסך החדש (מסך הסיום)
-                    finish(); // סגירת הפעילות הנוכחית (MainActivity)
+                            Intent intent = new Intent(MainActivity.this, EndScreen.class);
+                            intent.putExtra("player1Score", score1);
+                            intent.putExtra("player2Score", score2);
+
+                            String winner;
+                            if (score1 == score2) {
+                                winner = "Draw";
+                            } else {
+                                winner = score1 > score2 ? "Player 1" : "Player 2";
+                            }
+                            intent.putExtra("winner", winner);
+
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            startActivity(intent);
+                            finish();
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            // טיפול בשגיאה אם תרצה
+                        }
+                    });
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // טיפול בשגיאות בקריאת הנתונים מהמסד (לא חובה במקרה הזה)
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
+
+
 
 
 
@@ -206,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        // הלוח של המשחק של השחקן הראשון
         databaseRef.child("boardState").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -227,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // פונקציה להאזנה בזמן אמת למסד הנתונים
+    //מטרה: זוהי פונקציה שמוסיפה מאזינים (listeners) ל-Firebase, כדי שהאפליקציה תתעדכן אוטומטית כאשר יש שינויים.
     private void addRealtimeListeners() {
         // מאזין למצב הלוח
         Log.d("XXX", "addRealtimeListeners");  // רישום ב-log שהפונקציה הוזנה והחלה לפעול
@@ -285,6 +310,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         // מאזין למצב הלוח
+        // הקטע הזה מאזין לשינויים בנתיב boardState במסד הנתונים של Firebase. בכל פעם שיש שינוי בלוח (כלומר, קלף מתהפך או מוחזר),
+        //הוא מקבל את הנתונים ומעדכן את ה- UI (ממשק משתמש )בהתאם על ידי הצגת הקלפים המתאימים על המסך.
         databaseRef.child("boardState").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -313,6 +340,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    // הבדלים : ONDESTROY - סוגר לגמרי את הACTIVITY ומוחק אותו ברקע (לא נמצא ברקע)
+    // כ ONSTOP - עדיין קיים המסך הקודם , לא נסגר לגמרי ונשאר בזיכרון מתאים לאם עוברים למסך אחר
+
+    // onPause() – כשאתה רוצה לעצור דברים מיידית כשמאבדים פוקוס (וידאו, משחק).
+
+    // onStop() – כשאתה רוצה לשחרר משאבים כבדים יותר שלא נחוצים ברקע (Location, מצלמה).
+
+    // onDestroy() – כשאתה רוצה לוודא ששום משאב לא נשאר פתוח אם האקטיביטי נגמר סופית.
 
     @Override
     protected void onDestroy() {
@@ -354,7 +391,7 @@ public class MainActivity extends AppCompatActivity {
     {
         Log.e("isMyTurn", "whoAmI = " + whoAmI);
         Log.e("isMyTurn", "player1Turn = " + player1Turn);
-        return (whoAmI == 1 && player1Turn == TRUE) || (whoAmI == 2 && player1Turn == FALSE);
+        return (whoAmI == 1 && player1Turn == TRUE) || (whoAmI == 2 && player1Turn == FALSE); // הגדרנו למעלה מי אחד ומי 2
     }
     //הפונקציה isMyTurn בודקת אם זה תורו של השחקן הנוכחי לפעול על פי הערכים של whoAmI
     //אם השחקן הנוכחי יכול לפעול בתורו, הפונקציה מחזירה true, אחרת false.
@@ -370,9 +407,10 @@ public class MainActivity extends AppCompatActivity {
             return;  // יוצא מהפונקציה אם זה לא תור השחקן
         }
 
-        ImageView clickedImageView = (ImageView) view;  // מקבל את ה-ImageView של הקלף שנלחץ
+        ImageView clickedImageView = (ImageView) view;  // שומר את הקלף שנלחץ כ-ImageView כדי לעבוד איתו.
 
         // מציאת אינדקס הקלף שנלחץ
+        //מזהה איזה קלף בלוח נלחץ על ידי השוואה מול מערך הקלפים.
         int clickedIndex = -1;  // מאתחל את האינדקס לערך לא חוקי (-1)
         for (int i = 0; i < imageViewsArray.length; i++) {  // מעביר על כל המערך של הקלפים
             if (imageViewsArray[i] == clickedImageView) {  // אם מצאנו את הקלף שנלחץ
@@ -470,62 +508,56 @@ public class MainActivity extends AppCompatActivity {
     //Intent הוא אובייקט שמייצג פעולה שאנחנו רוצים לבצע במערכת האנדרואיד. הוא יכול לשמש ל:
     // סיום תור
     private void turnEnd() {
-        // הדפסת לוג עם מצב התור של שחקן 1 (player1Turn)
         Log.e("XXXXX", "player1Turn = " + player1Turn);
 
-
-        // אם יש התאמה בין הקלפים
         if (drawablesArray[card1].equals(drawablesArray[card2])) {
-            // אם מדובר בתור של שחקן 1
             if (player1Turn) {
-                counterPlayer1++; // עדכון ניקוד שחקן 1
+                counterPlayer1++;
             } else {
-                counterPlayer2++; // עדכון ניקוד שחקן 2
+                counterPlayer2++;
             }
 
-            // רישום ההתאמה במסד הנתונים
             logMatch();
-
-            // הצגת הודעה שהתשובה נכונה
             Toast.makeText(this, "Correct!", Toast.LENGTH_SHORT).show();
 
-            // בדיקת אם המשחק הסתיים (8 זוגות נחשפו)
             if (counterPlayer1 + counterPlayer2 == 8) {
-                // אם המשחק הסתיים, משתנים מצב המשחק ב-Firebase
-                databaseRef.child("isGameOn").setValue(false);
+                // עדכון הניקוד הסופי ב-Firebase
+                Map<String, Object> finalScores = new HashMap<>();
+                finalScores.put("player1Score", counterPlayer1);
+                finalScores.put("player2Score", counterPlayer2);
 
-                // כאן הסרת מעבר ישיר למסך הסיום, יטופל ע"י המאזין שהוספנו ב-onCreate
-                return; // יוצאים מהפונקציה
+                databaseRef.child("finalScores").setValue(finalScores).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // עדכון מצב המשחק ל'סיום'
+                        databaseRef.child("isGameOn").setValue(false);
+                    } else {
+                        // טיפול בשגיאה אם צריך
+                        Toast.makeText(MainActivity.this, "Error updating final scores", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                //
+                return;
             }
         } else {
-
-            // הצגת הודעת Toast שמסבירה שהתור הסתיים
             Toast.makeText(this, "Turn end", Toast.LENGTH_SHORT).show();
-
-            // החזרת הקלפים למצב מוסתר אם לא הייתה התאמה
             imageViewsArray[card1].setImageResource(R.drawable.back32);
             imageViewsArray[card2].setImageResource(R.drawable.back32);
             imageViewsArray[card1].setTag(false);
             imageViewsArray[card2].setTag(false);
-
-            // שינוי התור לשחקן השני
-            player1Turn = !player1Turn; // העברת התור לשחקן השני
+            player1Turn = !player1Turn;
         }
 
-        // עדכון תצוגת הניקוד
         updateScoreDisplay();
-
-        // עדכון מצב הלוח במסד הנתונים
         updateBoardState();
-
-        // עדכון מצב המשחק במסד הנתונים
         updateDatabaseGameState();
 
-        // אפס את המשתנים הקשורים לקלפים שנבחרו
         count = 0;
         card1 = -1;
         card2 = -1;
     }
+
+
 
 
     // פונקציה לעדכון תצוגת הניקוד
@@ -545,6 +577,13 @@ public class MainActivity extends AppCompatActivity {
 
 
     // פונקציה לעדכון מצב הלוח במסד הנתונים
+    // מטרתה: לעדכן את מצב הלוח עצמו, כלומר:
+    //
+    //איזה קלף נחשף?
+    //
+    //מה התמונה שלו (imageId)?
+    //
+    //מה המיקום שלו?
     private void updateBoardState() {
         // יצירת אובייקט HashMap שמכיל את מצב הלוח
         HashMap<String, Object> boardState = new HashMap<>();
@@ -581,6 +620,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // פונקציה לעדכון מצב המשחק במסד הנתונים
+    // מטרתה: לעדכן את מצב המשחק הכללי, כלומר:
+    //
+    //מה הניקוד של כל שחקן (player1Score, player2Score)
+    //
+    //מי בתור (playerTurn)
+    //
+    //כמה קלפים נבחרו בתור הנוכחי
     private void updateDatabaseGameState() {
         // יצירת אובייקט HashMap שיכיל את מצב המשחק
         HashMap<String, Object> gameState = new HashMap<>();
@@ -626,4 +672,13 @@ public class MainActivity extends AppCompatActivity {
                 (player1Turn ? "Player 1" : "Player 2"));
     }
 }
+//התפקיד של הקובץ AndroidManifest.xml באפליקציית אנדרואיד הוא להצהיר על כל המרכיבים החשובים של האפליקציה ולתת למערכת ההפעלה מידע קריטי על איך להריץ אותה.
+// אילו גישות האפליקציה שלך צריכה (אינטרנט, מיקום, מצלמה וכו'):
 
+// העברת נתונים בין מסכים מתבצעת באמצעות Intent (כוונה),
+
+//Intent	אובייקט שמטרתו לבצע פעולה – כמו לעבור למסך אחר.
+//Explicit Intent	העברת פעולה למסך מסוים בתוך האפליקציה.
+//Implicit Intent	פתיחת אפליקציה חיצונית (למשל, מצלמה).
+//Extras	משתנים שנשלחים בתוך Intent.
+//Intent Filter	מנגנון שמאפשר ל־Activity לדעת איך להתמודד עם Intents נכנסים (בעיקר Implicit).
